@@ -1,79 +1,194 @@
-# 🚑 Life Transport Systems  
-**A web-based emergency transport system for Uganda**  
+# Life Transport System
 
-## 🌐 **Project Description**  
-Life Transport Systems is a digital platform designed to **streamline emergency response and ambulance dispatch** in Uganda.  
-The system integrates:  
-✅ **Digital police verification** to reduce response time.  
-✅ **Real-time ambulance dispatch & tracking**.  
-✅ **Automated hospital notifications** for patient readiness.  
-✅ **User-friendly web and mobile interface** for quick emergency requests.  
+## Project Overview
+The **Life Transport System** is a **an emergency response platform** designed to streamline:
+- **Ambulance Dispatch**
+- **Police Accident Verification** 
+- **Hospital Emergency Coordination** 
+- **Secure Authentication** via QR Code
 
----
 
-## 📌 **GitHub Repository**  
-🔗 GitHub Repo: [https://github.com/your-username/LifeTransportSystem](https://github.com/your-username/LifeTransportSystem)  
+This system ensures **efficient, secure, and rapid** response to emergencies by integrating **users, emergency responders, and medical institutions** into a **unified digital framework**.
 
 ---
 
-## 🛠️ **How to Set Up the Project Locally**  
+## Key Features
+✅ **Emergency Request Submission** – Users can request assistance using a **QR code login** or **manual request**.  
+✅ **Police Accident Verification** – Verified accident reports ensure **hospital and ambulance dispatch coordination**.  
+✅ **Ambulance Dispatch System** – Automatically assigns available ambulances based on **GPS tracking**.  
+✅ **Hospital Dashboard** – Tracks **incoming patients**, **resource allocation**, and **arrival confirmations**.  
+✅ **Real-Time WebSockets Communication** – Ensures **live updates** between **users, police, ambulances, and hospitals**.  
+✅ **Secure Role-Based Access Control** – Different dashboards for **police, hospital staff, and patients(citizens)**.  
 
-### **1️⃣ Clone the Repository**  
+---
+
+## GitHub Repository
+🔗 **[View on GitHub](https://github.com/danielburongu/LifeTransportSystem.git)**  
+
+---
+
+## Setup Instructions
+### Clone the Repository
 ```bash
-git clone https://github.com/your-username/LifeTransportSystem.git
+git clone https://github.com/danielburongu/LifeTransportSystem.git
 cd LifeTransportSystem
+```
 
-2️⃣ Install Dependencies (Backend & Frontend)
-
+### Backend Setup
+```bash
 cd backend
 npm install
-cd ../frontend
-npm install
+```
+- Configure **.env**:
+  ```env
+  MONGO_URI=your_mongodb_connection_string
+  JWT_SECRET=your_secret_key
+  PORT=5000
+  ```
+- Start Server:
+  ```bash
+  npm start
+  ```
 
-3️⃣ Setup Environment Variables
-Inside backend/.env, add:
-PORT=5000
-MONGO_URI=mongodb+srv://your-mongodb-connection-url
-
-4️⃣ Start the Development Server
-Start the backend:
-cd backend
-npm run dev
-
-Start the frontend:
+### Frontend Setup
+```bash
 cd frontend
+npm install
 npm start
+```
+- App runs at **http://localhost:3000**  
+- API runs at **http://localhost:5000**
 
-🎨 Designs (Screenshots of the App Interfaces)
-1. Home Page (Request Emergency Transport)
+---
 
-2. Police Verification Portal
+## UI/UX Design
+### Design Process
+- **Wireframes & Mockups**: Created using **Figma**
+- **Style Guide**: Uses **Material UI + Tailwind CSS** for modern design.
 
-3. Hospital Dashboard (Real-Time Tracking)
 
-4. Ambulance Driver Interface
 
-📌 More UI Screens Available in screenshots/ Folder.
+🔗 **[View Designs on Figma](https://www.figma.com/design/6yAeXnj47xGo2NNlevgpIS/Ambulance-Dispatch-System?node-id=0-1&t=bYbpTjP9XMgyfmsn-1)**
 
-🚀 Deployment Plan
-1️⃣ Hosting Services
-Frontend: Vercel or Netlify
-Backend: Railway or AWS
-Database: MongoDB Atlas (Cloud Database)
-2️⃣ Steps for Deployment
-Frontend (React.js) on Vercel:
+---
 
-npm run build
-vercel deploy
-Backend (Node.js + Express) on Railway:
+## Project Architecture
+```
+LifeTransportSystem/
+│── frontend/
+│   ├── src/
+│   │   ├── components/    
+│   │   ├── pages/ 
+│   │   ├── assets/  
+│   │   ├── App.js
+│── backend/
+│   ├── models/
+│   ├── routes/
+│   ├── controllers/
+│   ├── server.js    
+│── docs/              
+│── README.md              
+│── package.json            
+│── .env                    
+```
 
-git add .
-git commit -m "Deploy backend"
+---
+
+## Backend Development
+### Server-Side Code
+Built with **Node.js & Express.js**  
+Implements **JWT authentication, role-based access, REST API endpoints**.
+
+**API Route**
+```javascript
+router.post('/request', authMiddleware, async (req, res) => {
+    const { location, emergency_type } = req.body;
+    try {
+        const newRequest = new EmergencyRequest({ user: req.user.id, location, emergency_type });
+        await newRequest.save();
+        res.status(201).json({ message: "Emergency request created successfully." });
+    } catch (error) {
+        res.status(500).json({ error: "Server Error" });
+    }
+});
+```
+
+### Database Schema
+```javascript
+const EmergencyRequestSchema = new mongoose.Schema({
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    location: { type: String, required: true },
+    emergency_type: { type: String, enum: ['accident', 'fire', 'medical'] },
+    status: { type: String, default: 'pending' },
+});
+```
+
+---
+
+## Deployment
+### Hosting Platforms
+- **Frontend**: **Vercel / Netlify**
+- **Backend**: **Render / AWS**
+- **Database**: **MongoDB Atlas**
+
+### Deployment Steps
+```bash
 git push origin main
-Railway automatically deploys changes to the backend.
+```
+- **Deploy Backend** → **Render**
+- **Deploy Frontend** → **Vercel**
 
-🤝 Contributing
-Want to contribute? Fork the repo, create a branch, and submit a pull request (PR).
 
-📜 License
-MIT License
+---
+
+## Video Demonstration
+**[Watch Demo Video](https://drive.google.com/file/d/18UkRtdSP_Z-NT_C3i1FKXShTmzhCHrKy/view?usp=sharing)**
+
+---
+
+## Functionality Demonstration
+### Emergency Process Flow
+1. **User Sends Emergency Request** – Fills form with location, accident type.
+2. **Police Verification** – Request is reviewed and verified.
+3. **Ambulance Dispatch** – Available ambulance is assigned.
+4. **Hospital Intake** – Patient is marked as arrived.
+5. **Incident Resolution** – Case is completed and logged.
+
+---
+
+## Dashboards Overview
+### **Police Dashboard**
+- **View & Verify Accidents**
+- **Manage Emergency Cases**
+- **Track Reports in Real-Time**
+
+### **Ambulance Dashboard**
+- **Receive Dispatch Orders**
+- **Track Assigned Cases**
+- **Update Status (On the Way, Arrived, etc.)**
+
+### **Hospital Dashboard**
+- **View Incoming Patients**
+- **Assign Doctors & Resources**
+- **Mark Patient Arrivals**
+
+### **Patient Dashboard**
+- **Request Emergency Services**
+- **Track Live Status of Requests**
+- **Receive Updates & Alerts**
+
+📂 **View Code Files**:
+- [Frontend](https://github.com/danielburongu/LifeTransportSystem/tree/main/frontend)
+- [Backend](https://github.com/danielburongu/LifeTransportSystem/tree/main/backend)
+
+---
+
+## How to Contribute
+**Want to contribute?**  
+- Fork the repo & create a **pull request**  
+- Submit **bug reports & feature requests** under [Issues](https://github.com/danielburongu/LifeTransportSystem/issues)  
+
+**Contact Us:** [d.burongu@alustudent.com](mailto:d.burongu@alustudent.com)
+---
+
+### **Emergency Response Made Faster & Smarter!**
