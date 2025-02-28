@@ -5,7 +5,7 @@ The **Life Transport System** is a **an emergency response platform** designed t
 - **Ambulance Dispatch**
 - **Police Accident Verification** 
 - **Hospital Emergency Coordination** 
-- **Secure Authentication** via QR Code
+- **Secure Access** via QR Code
 
 
 This system ensures **efficient, secure, and rapid** response to emergencies by integrating **users, emergency responders, and medical institutions** into a **unified digital framework**.
@@ -15,9 +15,9 @@ This system ensures **efficient, secure, and rapid** response to emergencies by 
 ## Key Features
 ✅ **Emergency Request Submission** – Users can request assistance using a **QR code login** or **manual request**.  
 ✅ **Police Accident Verification** – Verified accident reports ensure **hospital and ambulance dispatch coordination**.  
-✅ **Ambulance Dispatch System** – Automatically assigns available ambulances based on **GPS tracking**.  
+✅ **Ambulance Dispatch System** – Assigns available ambulances based on **location**.  
 ✅ **Hospital Dashboard** – Tracks **incoming patients**, **resource allocation**, and **arrival confirmations**.  
-✅ **Real-Time WebSockets Communication** – Ensures **live updates** between **users, police, ambulances, and hospitals**.  
+✅ **Communication** – Ensures **updates** between **users, police, ambulances, and hospitals**.  
 ✅ **Secure Role-Based Access Control** – Different dashboards for **police, hospital staff, and patients(citizens)**.  
 
 ---
@@ -61,14 +61,13 @@ npm start
 
 ---
 
-## UI/UX Design
 ### Design Process
 - **Wireframes & Mockups**: Created using **Figma**
 - **Style Guide**: Uses **Material UI + Tailwind CSS** for modern design.
 
 
 
-🔗 **[View Designs on Figma](https://www.figma.com/design/6yAeXnj47xGo2NNlevgpIS/Ambulance-Dispatch-System?node-id=0-1&t=bYbpTjP9XMgyfmsn-1)**
+🔗 **[View initial Mockup Designs on Figma](https://www.figma.com/design/6yAeXnj47xGo2NNlevgpIS/Ambulance-Dispatch-System?node-id=0-1&t=bYbpTjP9XMgyfmsn-1)**
 
 ---
 
@@ -127,8 +126,8 @@ const EmergencyRequestSchema = new mongoose.Schema({
 
 ## Deployment
 ### Hosting Platforms
-- **Frontend**: **Vercel / Netlify**
-- **Backend**: **Render / AWS**
+- **Frontend**: **Vercel**
+- **Backend**: **Render**
 - **Database**: **MongoDB Atlas**
 
 ### Deployment Steps
@@ -142,7 +141,7 @@ git push origin main
 ---
 
 ## Video Demonstration
-**[Watch Demo Video](https://drive.google.com/file/d/18UkRtdSP_Z-NT_C3i1FKXShTmzhCHrKy/view?usp=sharing)**
+**[Watch Demo Video]()**
 
 ---
 
@@ -160,7 +159,7 @@ git push origin main
 ### **Police Dashboard**
 - **View & Verify Accidents**
 - **Manage Emergency Cases**
-- **Track Reports in Real-Time**
+- **Track Reports**
 
 ### **Ambulance Dashboard**
 - **Receive Dispatch Orders**
@@ -174,7 +173,7 @@ git push origin main
 
 ### **Patient Dashboard**
 - **Request Emergency Services**
-- **Track Live Status of Requests**
+- **Track Status of Requests**
 - **Receive Updates & Alerts**
 
 📂 **View Code Files**:
@@ -188,7 +187,7 @@ git push origin main
 - Fork the repo & create a **pull request**  
 - Submit **bug reports & feature requests** under [Issues](https://github.com/danielburongu/LifeTransportSystem/issues)  
 
-**Contact Us:** [d.burongu@alustudent.com](mailto:d.burongu@alustudent.com)
+**Contact:** [d.burongu@alustudent.com](mailto:d.burongu@alustudent.com)
 ---
 
 ### **Emergency Response Made Faster & Smarter!**
