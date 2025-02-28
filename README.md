@@ -22,8 +22,12 @@ This system ensures **efficient, secure, and rapid** response to emergencies by 
 
 ---
 
-## GitHub Repository
-🔗 **[View on GitHub](https://github.com/danielburongu/LifeTransportSystem.git)**  
+## Link to the deployed version of the web application:
+🔗 **[View](https://life-transport-system-zxel-nu.vercel.app/)**
+
+## Link to Video showing the demo of the web application:
+🔗 **[View](https://www.loom.com/share/deb9709b8c3544a69f97c41f1105d851?sid=7455d8a8-c2c3-48cc-bd8a-4c055d3c506b)**
+
 
 ---
 
@@ -137,12 +141,6 @@ git push origin main
 - **Deploy Backend** → **Render**
 - **Deploy Frontend** → **Vercel**
 
-
----
-
-## Video Demonstration
-**[Watch Demo Video]()**
-
 ---
 
 ## Functionality Demonstration
@@ -188,6 +186,4 @@ git push origin main
 - Submit **bug reports & feature requests** under [Issues](https://github.com/danielburongu/LifeTransportSystem/issues)  
 
 **Contact:** [d.burongu@alustudent.com](mailto:d.burongu@alustudent.com)
----
 
-### **Emergency Response Made Faster & Smarter!**
