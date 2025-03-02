@@ -29,6 +29,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
+import { baseURL } from "../utils/baseURL"; // Import baseURL
 
 // Custom Map Marker
 const customMarker = new L.Icon({
@@ -56,7 +57,7 @@ const PatientDashboard = () => {
   const [coordinates, setCoordinates] = useState({ lat: null, lng: null });
   const [plusCode, setPlusCode] = useState("Not Available");
   const [emergencyType, setEmergencyType] = useState("");
-  const [mapZoom, setMapZoom] = useState(15);
+  const [requestLoading, setRequestLoading] = useState(false);
 
   // Form state variables
   const [victimName, setVictimName] = useState("");
@@ -67,42 +68,30 @@ const PatientDashboard = () => {
 
   const emergencyTypes = ["accident", "medical", "fire", "other"];
 
-  useEffect(() => {
-    if (user) fetchEmergencyRequests();
-
-    socket.on("patient_update_" + user?.userId, (updatedRequest) => {
-      setEmergencyRequests((prev) =>
-        prev.map((req) =>
-          req._id === updatedRequest._id ? updatedRequest : req
-        )
-      );
-    });
-
-    return () => socket.off("patient_update_" + user?.userId);
-  }, [user]);
-
   const fetchEmergencyRequests = useCallback(async () => {
     setLoading(true);
     setMessage("");
     try {
       const token = localStorage.getItem("token");
-      if (!token) throw new Error("Authentication required");
+      if (!token) throw new Error("❌ Authentication required. Please log in.");
 
-      const response = await fetch("http://localhost:5000/api/emergency/my-requests", {
+      const response = await fetch(`${baseURL}/emergency/my-requests`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!response.ok) throw new Error((await response.json()).message);
+      if (!response.ok) throw new Error((await response.json()).message || "Failed to load requests");
       const data = await response.json();
       console.log("API Response (fetchEmergencyRequests):", data);
 
       setEmergencyRequests(data);
+      if (data.length === 0) setMessage("No emergency requests found.");
     } catch (error) {
+      console.error("Fetch Emergency Requests Error:", error);
       setMessage(`❌ ${error.message || "Failed to load requests"}`);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, []); // No dependencies since token is from localStorage and baseURL is static
 
   const fetchCoordinates = useCallback(async (place) => {
     if (!place || place.length < 3) return;
@@ -129,6 +118,23 @@ const PatientDashboard = () => {
       setMessage("❌ Error fetching location");
     }
   }, []);
+
+  useEffect(() => {
+    if (user) fetchEmergencyRequests();
+
+    socket.on(`patient_update_${user?.userId}`, (updatedRequest) => {
+      console.log("Received patient update:", updatedRequest);
+      setEmergencyRequests((prev) =>
+        prev.map((req) =>
+          req._id === updatedRequest._id ? updatedRequest : req
+        )
+      );
+      setMessage("✅ Emergency request updated!");
+      setSuccessOpen(true);
+    });
+
+    return () => socket.off(`patient_update_${user?.userId}`);
+  }, [user, fetchEmergencyRequests]); // fetchEmergencyRequests moved above and added to deps
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
@@ -157,13 +163,13 @@ const PatientDashboard = () => {
       return;
     }
 
-    setLoading(true);
+    setRequestLoading(true);
     setMessage("");
     try {
       const token = localStorage.getItem("token");
-      if (!token) throw new Error("Authentication required");
+      if (!token) throw new Error("❌ Authentication required. Please log in.");
 
-      const response = await fetch("http://localhost:5000/api/emergency/request", {
+      const response = await fetch(`${baseURL}/emergency/request`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -208,7 +214,7 @@ const PatientDashboard = () => {
       console.error("Request Emergency Error:", error);
       setMessage(`❌ ${error.message || "Request failed"}`);
     } finally {
-      setLoading(false);
+      setRequestLoading(false);
     }
   };
 
@@ -385,22 +391,28 @@ const PatientDashboard = () => {
                 <Button
                   variant="contained"
                   onClick={requestEmergency}
-                  disabled={loading}
+                  disabled={requestLoading}
                   sx={{
                     width: "100%",
                     bgcolor: "#D32F2F",
                     "&:hover": { bgcolor: "#C62828" },
+                    "&:disabled": { bgcolor: "#B0BEC5" },
                     py: 1.5,
                     fontWeight: 600,
                     fontFamily: "'Poppins', sans-serif",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
-                  startIcon={<ReportProblemIcon />}
+                  startIcon={
+                    requestLoading ? (
+                      <CircularProgress size={20} sx={{ color: "#FFFFFF" }} />
+                    ) : (
+                      <ReportProblemIcon />
+                    )
+                  }
                 >
-                  {loading ? (
-                    <CircularProgress size={24} sx={{ color: "white" }} />
-                  ) : (
-                    "Request Emergency"
-                  )}
+                  {requestLoading ? "Requesting..." : "Request Emergency"}
                 </Button>
 
                 {plusCode !== "Not Available" && (
@@ -436,7 +448,7 @@ const PatientDashboard = () => {
               >
                 <MapContainer
                   center={[coordinates.lat, coordinates.lng]}
-                  zoom={mapZoom}
+                  zoom={15}
                   style={{ height: "300px", width: "100%" }}
                 >
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -467,7 +479,7 @@ const PatientDashboard = () => {
 
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
-          <CircularProgress />
+          <CircularProgress size={60} sx={{ color: "#D32F2F" }} />
         </Box>
       ) : emergencyRequests.length === 0 ? (
         <Typography
@@ -607,7 +619,11 @@ const PatientDashboard = () => {
             setSuccessOpen(false);
             setMessage("");
           }}
-          sx={{ width: "100%", fontFamily: "'Poppins', sans-serif" }}
+          sx={{
+            width: "100%",
+            bgcolor: message ? "#D32F2F" : "#00695C",
+            fontFamily: "'Poppins', sans-serif",
+          }}
         >
           {message || "✅ Emergency request sent successfully!"}
         </Alert>

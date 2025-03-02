@@ -23,11 +23,11 @@ import {
 import { styled } from "@mui/material/styles";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import PersonIcon from "@mui/icons-material/Person";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
+import { baseURL } from "../utils/baseURL"; // Import baseURL
 
 // Styled components
 const DashboardCard = styled(Card)(({ theme }) => ({
@@ -57,6 +57,8 @@ const HospitalDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [dispatchLoading, setDispatchLoading] = useState(false); // Added for dispatch loading
+  const [arrivalLoading, setArrivalLoading] = useState(false); // Added for arrival loading
 
   useEffect(() => {
     console.log("🚀 Mounting Hospital Dashboard...");
@@ -66,6 +68,8 @@ const HospitalDashboard = () => {
     socket.on("new_verified_emergency", (newEmergency) => {
       console.log("🚨 New Verified Emergency Received:", newEmergency);
       setEmergencyRequests((prev) => [...prev, newEmergency]);
+      setMessage("🚨 New verified emergency received!");
+      setOpenSnackbar(true);
     });
 
     socket.on("ambulance_dispatched", ({ requestId, ambulanceId }) => {
@@ -75,6 +79,8 @@ const HospitalDashboard = () => {
           req._id === requestId ? { ...req, assigned_ambulance: ambulanceId, status: "dispatched" } : req
         )
       );
+      setMessage("🚑 Ambulance dispatched successfully!");
+      setOpenSnackbar(true);
     });
 
     socket.on("patient_arrived", (emergency) => {
@@ -84,11 +90,15 @@ const HospitalDashboard = () => {
           req._id === emergency._id ? { ...req, status: "completed" } : req
         )
       );
+      setMessage("✅ Patient arrival confirmed!");
+      setOpenSnackbar(true);
     });
 
     socket.on("emergency_completed", (requestId) => {
       console.log("✅ Emergency Completed:", requestId);
       setEmergencyRequests((prev) => prev.filter((req) => req._id !== requestId));
+      setMessage("✅ Emergency case completed and removed.");
+      setOpenSnackbar(true);
     });
 
     return () => {
@@ -111,7 +121,7 @@ const HospitalDashboard = () => {
         return;
       }
 
-      const res = await fetch("http://localhost:5000/api/emergency/verified", {
+      const res = await fetch(`${baseURL}/emergency/verified`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -130,7 +140,7 @@ const HospitalDashboard = () => {
       }
     } catch (err) {
       console.error("❌ Server error:", err);
-      setMessage("❌ Server error. Check backend logs.");
+      setMessage("❌ Network error. Check backend logs.");
       setOpenSnackbar(true);
     } finally {
       setLoading(false);
@@ -146,7 +156,7 @@ const HospitalDashboard = () => {
         return;
       }
 
-      const res = await fetch("http://localhost:5000/api/ambulance/available", {
+      const res = await fetch(`${baseURL}/ambulance/available`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -165,7 +175,7 @@ const HospitalDashboard = () => {
       }
     } catch (err) {
       console.error("❌ Error fetching ambulances:", err);
-      setMessage("❌ Server error while fetching ambulances. Check backend logs.");
+      setMessage("❌ Network error while fetching ambulances. Check backend logs.");
       setOpenSnackbar(true);
     }
   };
@@ -178,6 +188,7 @@ const HospitalDashboard = () => {
       return;
     }
 
+    setDispatchLoading(true);
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -186,7 +197,7 @@ const HospitalDashboard = () => {
         return;
       }
 
-      const res = await fetch(`http://localhost:5000/api/emergency/dispatch/${requestId}`, {
+      const res = await fetch(`${baseURL}/emergency/dispatch/${requestId}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -204,7 +215,7 @@ const HospitalDashboard = () => {
             req._id === requestId ? { ...req, assigned_ambulance: ambulanceId, status: "dispatched" } : req
           )
         );
-        setMessage("✅ Ambulance dispatched successfully.");
+        setMessage("✅ Ambulance dispatched successfully!");
         setOpenSnackbar(true);
       } else {
         setMessage(`⚠ Server Error: ${data.message}`);
@@ -212,12 +223,15 @@ const HospitalDashboard = () => {
       }
     } catch (err) {
       console.error("❌ Error dispatching ambulance:", err);
-      setMessage("❌ Server error. Check backend logs.");
+      setMessage("❌ Network error. Check backend logs.");
       setOpenSnackbar(true);
+    } finally {
+      setDispatchLoading(false);
     }
   };
 
   const markArrival = async (requestId) => {
+    setArrivalLoading(true);
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -226,7 +240,7 @@ const HospitalDashboard = () => {
         return;
       }
 
-      const res = await fetch(`http://localhost:5000/api/emergency/confirm-arrival/${requestId}`, {
+      const res = await fetch(`${baseURL}/emergency/confirm-arrival/${requestId}`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -240,7 +254,7 @@ const HospitalDashboard = () => {
             req._id === requestId ? { ...req, status: "completed" } : req
           )
         );
-        setMessage("✅ Patient arrival confirmed.");
+        setMessage("✅ Patient arrival confirmed!");
         setOpenSnackbar(true);
       } else {
         setMessage(`⚠ Server Error: ${data.message}`);
@@ -248,8 +262,10 @@ const HospitalDashboard = () => {
       }
     } catch (err) {
       console.error("❌ Error confirming arrival:", err);
-      setMessage("❌ Server error. Check backend logs.");
+      setMessage("❌ Network error. Check backend logs.");
       setOpenSnackbar(true);
+    } finally {
+      setArrivalLoading(false);
     }
   };
 
@@ -422,7 +438,7 @@ const HospitalDashboard = () => {
                       <Select
                         value={selectedDriver[req._id] || ""}
                         onChange={(e) => handleDriverSelection(req._id, e.target.value)}
-                        disabled={req.status !== "verified"}
+                        disabled={req.status !== "verified" || dispatchLoading}
                         label="Assign Driver"
                         sx={{ fontFamily: "'Poppins', sans-serif'" }}
                       >
@@ -450,31 +466,39 @@ const HospitalDashboard = () => {
                     <Button
                       variant="contained"
                       fullWidth
-                      disabled={req.status !== "verified"}
-                      startIcon={<DirectionsCarIcon />}
+                      disabled={req.status !== "verified" || dispatchLoading}
+                      startIcon={dispatchLoading ? <CircularProgress size={20} sx={{ color: "#FFFFFF" }} /> : <DirectionsCarIcon />}
                       onClick={() => assignAmbulance(req._id)}
                       sx={{
                         backgroundColor: "#D32F2F",
                         "&:hover": { backgroundColor: "#C62828" },
+                        "&:disabled": { backgroundColor: "#B0BEC5" },
                         fontFamily: "'Poppins', sans-serif'",
                         mb: 1,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
-                      Dispatch Ambulance
+                      {dispatchLoading ? "Dispatching..." : "Dispatch Ambulance"}
                     </Button>
                     <Button
                       variant="contained"
                       fullWidth
-                      disabled={req.status !== "dispatched"}
-                      startIcon={<CheckCircleIcon />}
+                      disabled={req.status !== "dispatched" || arrivalLoading}
+                      startIcon={arrivalLoading ? <CircularProgress size={20} sx={{ color: "#FFFFFF" }} /> : <CheckCircleIcon />}
                       onClick={() => markArrival(req._id)}
                       sx={{
                         backgroundColor: "#D32F2F",
                         "&:hover": { backgroundColor: "#C62828" },
+                        "&:disabled": { backgroundColor: "#B0BEC5" },
                         fontFamily: "'Poppins', sans-serif'",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
-                      Confirm Arrival
+                      {arrivalLoading ? "Confirming..." : "Confirm Arrival"}
                     </Button>
                   </CardContent>
                 </DashboardCard>
@@ -492,11 +516,18 @@ const HospitalDashboard = () => {
       >
         <Alert
           onClose={() => setOpenSnackbar(false)}
-          severity={message.includes("error") ? "error" : message.includes("No available") ? "warning" : "info"}
+          severity={
+            message.includes("error") ? "error" :
+            message.includes("No active") || message.includes("No available") ? "warning" :
+            "success"
+          }
           variant="filled"
           sx={{
             width: "100%",
-            bgcolor: message.includes("error") ? "#D32F2F" : message.includes("No available") ? "#FF9800" : "#00695C",
+            bgcolor:
+              message.includes("error") ? "#D32F2F" :
+              message.includes("No active") || message.includes("No available") ? "#FF9800" :
+              "#00695C",
             fontFamily: "'Poppins', sans-serif'",
           }}
         >

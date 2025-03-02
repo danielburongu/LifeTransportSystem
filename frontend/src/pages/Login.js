@@ -1,8 +1,9 @@
 import React, { useState, useContext } from "react";
 import { motion } from "framer-motion";
 import { AuthContext } from "../context/AuthContext";
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import { Link } from "react-router-dom";
+import { baseURL } from "../utils/baseURL"; // Import updated baseURL
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ email: "", password: "" });
@@ -20,7 +21,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const response = await fetch(`${baseURL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
@@ -32,18 +33,19 @@ const Login = () => {
       if (response.ok) {
         login(data.user, data.token);
       } else {
-        setError(data.message || "❌ Login failed. Please try again.");
+        setError(data.message || "❌ Login failed. Please check your credentials.");
       }
     } catch (error) {
       setLoading(false);
-      setError("❌ Server error. Please try again later.");
+      setError("❌ Network error. Please try again later.");
+      console.error("Login error:", error);
     }
   };
 
   return (
     <Box
       className="w-full min-h-screen flex items-center justify-center m-0 p-0 mt-24"
-      sx={{ bgcolor: "#ff" }} 
+      sx={{ bgcolor: "#f5f5f5" }}
     >
       <motion.div
         className="bg-white p-6 md:p-12 rounded-lg shadow-lg w-full max-w-lg border border-red-600"
@@ -85,7 +87,7 @@ const Login = () => {
           </Typography>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4"> {/* Reduced from space-y-6 */}
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
             name="email"
@@ -124,9 +126,19 @@ const Login = () => {
               "&:hover": { bgcolor: "#C62828" },
               "&:disabled": { bgcolor: "#B0BEC5" },
               mt: 2,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? (
+              <>
+                <CircularProgress size={20} sx={{ color: "#FFFFFF", mr: 1 }} />
+                Logging in...
+              </>
+            ) : (
+              "Login"
+            )}
           </Button>
         </form>
 
@@ -147,6 +159,25 @@ const Login = () => {
           >
             Register
           </Link>
+        </Typography>
+
+        <Typography
+          sx={{
+            fontFamily: "'Poppins', sans-serif",
+            fontSize: "0.9rem",
+            color: "#00695C",
+            textAlign: "center",
+            mt: 2,
+          }}
+        >
+          <Link
+            to="/Qr-login"
+            className="text-red-600 font-semibold hover:text-red-700 transition duration-300"
+            style={{ fontFamily: "'Poppins', sans-serif" }}
+          >
+            Use QR Code Login
+          </Link>{" "}
+          for instant emergency access
         </Typography>
       </motion.div>
     </Box>

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, CircularProgress } from "@mui/material"; // Added CircularProgress
 import { Link } from "react-router-dom";
+import { baseURL } from "../utils/baseURL"; // Import baseURL
 
 const Register = () => {
   const [user, setUser] = useState({
@@ -29,7 +30,7 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/register", {
+      const response = await fetch(`${baseURL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(user),
@@ -42,18 +43,19 @@ const Register = () => {
         setSuccess("✅ Registration successful! Redirecting to login...");
         setTimeout(() => navigate("/login"), 1000);
       } else {
-        setError(data.message || "❌ Registration failed. Please try again.");
+        setError(data.message || "❌ Registration failed. Please check your details.");
       }
     } catch (error) {
       setLoading(false);
-      setError("❌ Server error. Please try again later.");
+      setError("❌ Network error. Please try again later.");
+      console.error("Registration error:", error);
     }
   };
 
   return (
     <Box
-      className="w-full min-h-screen flex items-center justify-center m-0 p-0 mt-24 "
-      sx={{ bgcolor: "#ff" }}
+      className="w-full min-h-screen flex items-center justify-center m-0 p-0 mt-24"
+      sx={{ bgcolor: "#f5f5f5" }} // Updated from #ff to light gray
     >
       <motion.div
         className="bg-white p-6 md:p-12 rounded-lg shadow-lg w-full max-w-lg border border-red-600 mt-6"
@@ -88,7 +90,7 @@ const Register = () => {
 
         {error && (
           <Typography
-            className="text-red-600 bg-red-100 p-2 rounded mb-4 "
+            className="text-red-600 bg-red-100 p-2 rounded mb-4"
             sx={{ fontFamily: "'Poppins', sans-serif" }}
           >
             {error}
@@ -103,7 +105,7 @@ const Register = () => {
           </Typography>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4"> {/* Reduced from space-y-6 */}
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
             name="name"
@@ -183,9 +185,19 @@ const Register = () => {
               "&:hover": { bgcolor: "#C62828" },
               "&:disabled": { bgcolor: "#B0BEC5" },
               mt: 2,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            {loading ? "Registering..." : "Register"}
+            {loading ? (
+              <>
+                <CircularProgress size={20} sx={{ color: "#FFFFFF", mr: 1 }} />
+                Registering...
+              </>
+            ) : (
+              "Register"
+            )}
           </Button>
         </form>
 
@@ -206,6 +218,25 @@ const Register = () => {
           >
             Login
           </Link>
+        </Typography>
+
+        <Typography
+          sx={{
+            fontFamily: "'Poppins', sans-serif",
+            fontSize: "0.9rem",
+            color: "#00695C",
+            textAlign: "center",
+            mt: 2,
+          }}
+        >
+          <Link
+            to="/Qr-login"
+            className="text-red-600 font-semibold hover:text-red-700 transition duration-300"
+            style={{ fontFamily: "'Poppins', sans-serif" }}
+          >
+            Use QR Code Login
+          </Link>{" "}
+          for instant emergency access
         </Typography>
       </motion.div>
     </Box>

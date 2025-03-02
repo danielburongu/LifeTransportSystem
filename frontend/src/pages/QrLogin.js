@@ -1,33 +1,34 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { Box, Typography, Button, CircularProgress } from "@mui/material"; // Added CircularProgress
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQrcode, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-import { Html5QrcodeScanner } from "html5-qrcode"; // Use html5-qrcode instead
+import { Html5QrcodeScanner } from "html5-qrcode";
 import Navbar from "../components/Navbar";
+import { baseURL } from "../utils/baseURL"; // Import baseURL
 
 const QrLogin = () => {
-  const [isQrScannerActive, setIsQrScannerActive] = useState(true); // Scanner active by default
+  const [isQrScannerActive, setIsQrScannerActive] = useState(true);
   const [qrError, setQrError] = useState(null);
   const [requestSent, setRequestSent] = useState(false);
+  const [loading, setLoading] = useState(false); // Added loading state
   const scannerRef = useRef(null);
 
-  // Initialize QR scanner
   useEffect(() => {
     if (isQrScannerActive && !scannerRef.current) {
       const qrCodeScanner = new Html5QrcodeScanner(
-        "qr-reader", // DOM element ID
-        { fps: 10, qrbox: 250 }, // Config: frames per second, QR box size
-        false // Verbose logging off
+        "qr-reader",
+        { fps: 10, qrbox: 250 },
+        false
       );
 
       qrCodeScanner.render(
-        (decodedText) => handleQrScan(decodedText), // Success callback
-        (error) => handleQrError(error) // Error callback
+        (decodedText) => handleQrScan(decodedText),
+        (error) => handleQrError(error)
       );
 
       scannerRef.current = qrCodeScanner;
 
-      // Cleanup on unmount or toggle
       return () => {
         if (scannerRef.current) {
           scannerRef.current.clear();
@@ -37,29 +38,30 @@ const QrLogin = () => {
     }
   }, [isQrScannerActive]);
 
-  // QR code scan handler
   const handleQrScan = async (data) => {
     if (data) {
       setQrError(null);
+      setLoading(true);
 
-      // Assume QR code contains "emergency-request"
       if (data.includes("emergency-request")) {
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             async (position) => {
               const { latitude, longitude } = position.coords;
 
-              // Send guest emergency request to backend
               try {
-                const response = await fetch("http://localhost:5000/api/emergency/guest-request", {
+                const response = await fetch(`${baseURL}/emergency/guest-request`, {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
                     latitude,
                     longitude,
-                    emergency_type: "unspecified", // Default type
+                    emergency_type: "unspecified",
                   }),
                 });
+
+                const data = await response.json();
+                setLoading(false);
 
                 if (response.ok) {
                   setRequestSent(true);
@@ -69,28 +71,34 @@ const QrLogin = () => {
                     scannerRef.current = null;
                   }
                 } else {
-                  setQrError("Failed to process emergency request. Please try again.");
+                  setQrError(data.message || "❌ Failed to process emergency request. Please try again.");
                 }
               } catch (err) {
-                setQrError("Error connecting to server. Please try again.");
+                setLoading(false);
+                setQrError("❌ Network error. Please try again later.");
+                console.error("QR scan error:", err);
               }
             },
             (error) => {
-              setQrError("Unable to get your location. Please allow location access.");
+              setLoading(false);
+              setQrError("❌ Unable to get your location. Please allow location access.");
             }
           );
         } else {
-          setQrError("Geolocation is not supported by your browser.");
+          setLoading(false);
+          setQrError("❌ Geolocation is not supported by your browser.");
         }
       } else {
-        setQrError("Invalid QR code. Scan a Life Transport emergency QR code.");
+        setLoading(false);
+        setQrError("❌ Invalid QR code. Scan a Life Transport emergency QR code.");
       }
     }
   };
 
   const handleQrError = (err) => {
-    setQrError("Error scanning QR code. Please try again.");
-    console.error(err);
+    setLoading(false);
+    setQrError("❌ Error scanning QR code. Please try again.");
+    console.error("QR scanner error:", err);
   };
 
   const handleQrToggle = () => {
@@ -101,89 +109,199 @@ const QrLogin = () => {
     setIsQrScannerActive(false);
     setQrError(null);
     setRequestSent(false);
+    setLoading(false);
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
-      <Navbar />
-      <div className="flex-1 py-16">
-        <div className="container mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-12"
-          >
-            <h1 className="text-4xl md:text-5xl font-bold text-teal-700 mb-4 mt-6">
-              Instant Emergency Access
-            </h1>
-            <div className="w-24 h-1 bg-red-600 mx-auto"></div>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-              Scan the QR code to request emergency services instantly—no sign-up needed.
-            </p>
-          </motion.div>
+    <Box
+      className="w-full min-h-screen flex items-center justify-center m-0 p-0 mt-24"
+      sx={{ bgcolor: "#f5f5f5" }} // Consistent light gray background
+    >
+      <motion.div
+        className="bg-white p-6 md:p-12 rounded-lg shadow-lg w-full max-w-lg border border-red-600"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        <Navbar />
+        <Typography
+          variant="h2"
+          sx={{
+            fontFamily: "'Poppins', sans-serif",
+            fontSize: { xs: "2rem", md: "2.5rem" },
+            fontWeight: 700,
+            color: "#00695C",
+            textAlign: "center",
+            mb: 4,
+            mt: 2,
+          }}
+        >
+          Instant Emergency Access
+        </Typography>
+        <Typography
+          sx={{
+            fontFamily: "'Poppins', sans-serif",
+            fontSize: { xs: "1rem", md: "1.25rem" },
+            color: "#00695C",
+            textAlign: "center",
+            mb: 4,
+          }}
+        >
+          Scan the QR code to request emergency services instantly—no sign-up needed
+        </Typography>
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="bg-white p-8 rounded-2xl shadow-lg max-w-md mx-auto"
+        {qrError && (
+          <Typography
+            className="text-red-600 bg-red-100 p-2 rounded mb-4"
+            sx={{ fontFamily: "'Poppins', sans-serif" }}
           >
-            {isQrScannerActive ? (
-              <>
-                <div className="text-center mb-6">
-                  <FontAwesomeIcon icon={faQrcode} className="text-teal-700 text-5xl mb-2" />
-                  <h2 className="text-2xl font-bold text-teal-700">Scan QR Code</h2>
-                  <p className="text-gray-600 text-sm mt-2">
-                    Point your camera at the Life Transport QR code to request help.
-                  </p>
-                </div>
-                <div id="qr-reader" style={{ width: "100%" }}></div> {/* QR scanner renders here */}
-                {qrError && <p className="text-red-600 text-sm text-center mt-4">{qrError}</p>}
-                <button
-                  className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-lg mt-6 transition-all duration-300"
-                  onClick={handleQrToggle}
+            {qrError}
+          </Typography>
+        )}
+        {requestSent && !loading && (
+          <Typography
+            className="text-green-600 bg-green-100 p-2 rounded mb-4"
+            sx={{ fontFamily: "'Poppins', sans-serif" }}
+          >
+            ✅ Emergency Requested! Help is on the way.
+          </Typography>
+        )}
+
+        {isQrScannerActive ? (
+          <Box className="space-y-4">
+            <Box className="text-center mb-6">
+              <FontAwesomeIcon icon={faQrcode} className="text-teal-700 text-5xl mb-2" />
+              <Typography
+                variant="h5"
+                sx={{
+                  fontFamily: "'Poppins', sans-serif",
+                  fontWeight: 600,
+                  color: "#00695C",
+                }}
+              >
+                Scan QR Code
+              </Typography>
+              <Typography
+                sx={{
+                  fontFamily: "'Poppins', sans-serif",
+                  fontSize: "1rem",
+                  color: "#00695C",
+                }}
+              >
+                Point your camera at the Life Transport QR code to request help
+              </Typography>
+            </Box>
+            <Box id="qr-reader" sx={{ width: "100%" }}></Box>
+            {loading && (
+              <Box className="text-center">
+                <CircularProgress size={20} sx={{ color: "#D32F2F", mb: 1 }} />
+                <Typography
+                  sx={{
+                    fontFamily: "'Poppins', sans-serif",
+                    fontSize: "1rem",
+                    color: "#D32F2F",
+                  }}
                 >
-                  Cancel
-                </button>
-              </>
-            ) : requestSent ? (
-              <>
-                <div className="text-center mb-6">
-                  <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-600 text-5xl mb-2" />
-                  <h2 className="text-2xl font-bold text-teal-700">Emergency Requested</h2>
-                  <p className="text-gray-600 text-base mt-2">
-                    Help is on the way! Your location has been shared with emergency services.
-                  </p>
-                </div>
-                <button
-                  className="w-full bg-teal-700 hover:bg-teal-800 text-white py-2 rounded-lg transition-all duration-300"
-                  onClick={handleQrToggle}
-                >
-                  Scan Another QR
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="text-center mb-6">
-                  <FontAwesomeIcon icon={faQrcode} className="text-teal-700 text-5xl mb-2" />
-                  <h2 className="text-2xl font-bold text-teal-700">Ready to Scan</h2>
-                  <p className="text-gray-600 text-base mt-2">
-                    Click below to start scanning a QR code for instant emergency access.
-                  </p>
-                </div>
-                <button
-                  className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg transition-all duration-300"
-                  onClick={() => setIsQrScannerActive(true)}
-                >
-                  Start Scanning
-                </button>
-              </>
+                  Processing...
+                </Typography>
+              </Box>
             )}
-          </motion.div>
-        </div>
-      </div>
-    </div>
+            <Button
+              onClick={handleQrToggle}
+              disabled={loading}
+              variant="contained"
+              sx={{
+                bgcolor: "#D32F2F",
+                color: "#FFFFFF",
+                width: "100%",
+                p: 2,
+                fontSize: "1.125rem",
+                fontWeight: 600,
+                borderRadius: "8px",
+                textTransform: "none",
+                fontFamily: "'Poppins', sans-serif",
+                "&:hover": { bgcolor: "#C62828" },
+                "&:disabled": { bgcolor: "#B0BEC5" },
+                mt: 2,
+              }}
+            >
+              Cancel
+            </Button>
+          </Box>
+        ) : (
+          <Box className="space-y-4">
+            {requestSent ? (
+              <Box className="text-center">
+                <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-600 text-5xl mb-2" />
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontFamily: "'Poppins', sans-serif",
+                    fontWeight: 600,
+                    color: "#00695C",
+                  }}
+                >
+                  Emergency Requested
+                </Typography>
+                <Typography
+                  sx={{
+                    fontFamily: "'Poppins', sans-serif",
+                    fontSize: "1rem",
+                    color: "#00695C",
+                    mt: 2,
+                  }}
+                >
+                  Help is on the way! Your location has been shared with emergency services.
+                </Typography>
+              </Box>
+            ) : (
+              <Box className="text-center">
+                <FontAwesomeIcon icon={faQrcode} className="text-teal-700 text-5xl mb-2" />
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontFamily: "'Poppins', sans-serif",
+                    fontWeight: 600,
+                    color: "#00695C",
+                  }}
+                >
+                  Ready to Scan
+                </Typography>
+                <Typography
+                  sx={{
+                    fontFamily: "'Poppins', sans-serif",
+                    fontSize: "1rem",
+                    color: "#00695C",
+                    mt: 2,
+                  }}
+                >
+                  Click below to start scanning a QR code for instant emergency access
+                </Typography>
+              </Box>
+            )}
+            <Button
+              onClick={() => setIsQrScannerActive(true)}
+              variant="contained"
+              sx={{
+                bgcolor: "#D32F2F",
+                color: "#FFFFFF",
+                width: "100%",
+                p: 2,
+                fontSize: "1.125rem",
+                fontWeight: 600,
+                borderRadius: "8px",
+                textTransform: "none",
+                fontFamily: "'Poppins', sans-serif",
+                "&:hover": { bgcolor: "#C62828" },
+                mt: 2,
+              }}
+            >
+              {requestSent ? "Scan Another QR" : "Start Scanning"}
+            </Button>
+          </Box>
+        )}
+      </motion.div>
+    </Box>
   );
 };
 

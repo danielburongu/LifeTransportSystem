@@ -24,6 +24,7 @@ import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PersonIcon from "@mui/icons-material/Person";
+import { baseURL } from "../utils/baseURL"; // Import baseURL
 
 const PoliceDashboard = () => {
   const { user } = useContext(AuthContext);
@@ -38,16 +39,18 @@ const PoliceDashboard = () => {
     fetchPendingAccidents();
 
     socket.on("new_accident_report", (newReport) => {
+      console.log("New accident report received:", newReport);
       setAccidentReports((prevReports) => [...prevReports, newReport]);
-      setMessage("New report received");
+      setMessage("🚨 New report received!");
       setOpenSnackbar(true);
     });
 
     socket.on("accident_verified", ({ requestId }) => {
+      console.log("Accident verified:", requestId);
       setAccidentReports((prevReports) =>
         prevReports.filter((report) => report._id !== requestId)
       );
-      setMessage("An accident has been verified");
+      setMessage("✅ An accident has been verified!");
       setOpenSnackbar(true);
     });
 
@@ -59,24 +62,27 @@ const PoliceDashboard = () => {
 
   const fetchPendingAccidents = async () => {
     setLoading(true);
+    setMessage("");
     try {
       const token = localStorage.getItem("token");
-      if (!token) throw new Error("Unauthorized. Please log in again.");
+      if (!token) throw new Error("❌ Unauthorized. Please log in again.");
 
-      const response = await fetch("http://localhost:5000/api/emergency/pending-accidents", {
+      const response = await fetch(`${baseURL}/emergency/pending-accidents`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const data = await response.json();
-      if (response.ok) {
-        setAccidentReports(data);
-        if (data.length === 0) setMessage("No pending accident reports");
-      } else {
-        setMessage(data.message || "Failed to load pending accidents");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to load pending accidents");
       }
+      const data = await response.json();
+      console.log("Fetched pending accidents:", data);
+
+      setAccidentReports(data);
+      if (data.length === 0) setMessage("No pending accident reports");
     } catch (error) {
       console.error("Network Error:", error);
-      setMessage("Server error. Please try again later.");
+      setMessage(`❌ ${error.message || "Server error. Please try again later."}`);
     } finally {
       setLoading(false);
     }
@@ -86,9 +92,9 @@ const PoliceDashboard = () => {
     setVerifying((prev) => ({ ...prev, [reportId]: true }));
     try {
       const token = localStorage.getItem("token");
-      if (!token) throw new Error("Unauthorized. Please log in again.");
+      if (!token) throw new Error("❌ Unauthorized. Please log in again.");
 
-      const response = await fetch(`http://localhost:5000/api/emergency/verify/${reportId}`, {
+      const response = await fetch(`${baseURL}/emergency/verify/${reportId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -96,16 +102,19 @@ const PoliceDashboard = () => {
         },
       });
 
-      const data = await response.json();
-      if (response.ok) {
-        setAccidentReports((prevReports) => prevReports.filter((report) => report._id !== reportId));
-        setMessage("Accident verified successfully");
-        socket.emit("accident_verified", { requestId: reportId });
-      } else {
-        setMessage(data.message || "Verification failed");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Verification failed");
       }
+      const data = await response.json();
+      console.log("Verified accident:", data);
+
+      setAccidentReports((prevReports) => prevReports.filter((report) => report._id !== reportId));
+      setMessage("✅ Accident verified successfully!");
+      socket.emit("accident_verified", { requestId: reportId });
     } catch (error) {
-      setMessage("Server error during verification");
+      console.error("Verification Error:", error);
+      setMessage(`❌ ${error.message || "Server error during verification"}`);
     } finally {
       setVerifying((prev) => ({ ...prev, [reportId]: false }));
       setOpenSnackbar(true);
@@ -198,7 +207,7 @@ const PoliceDashboard = () => {
               "&:hover": { color: "#C62828" },
             }}
           >
-            <RefreshIcon />
+            {loading ? <CircularProgress size={24} sx={{ color: "#D32F2F" }} /> : <RefreshIcon />}
           </IconButton>
         </Tooltip>
       </Box>
@@ -338,7 +347,7 @@ const PoliceDashboard = () => {
                         size="small"
                         startIcon={
                           verifying[report._id] ? (
-                            <CircularProgress size={16} color="inherit" />
+                            <CircularProgress size={16} sx={{ color: "#FFFFFF" }} />
                           ) : (
                             <VerifiedIcon />
                           )
@@ -346,11 +355,15 @@ const PoliceDashboard = () => {
                         sx={{
                           bgcolor: "#D32F2F",
                           "&:hover": { bgcolor: "#C62828" },
+                          "&:disabled": { bgcolor: "#B0BEC5" },
                           borderRadius: 1,
                           fontFamily: "'Poppins', sans-serif",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
                       >
-                        {verifying[report._id] ? "Verifying" : "Verify"}
+                        {verifying[report._id] ? "Verifying..." : "Verify"}
                       </Button>
                     </Box>
                   </CardContent>
@@ -369,12 +382,12 @@ const PoliceDashboard = () => {
       >
         <Alert
           onClose={handleCloseSnackbar}
-          severity={message.startsWith("Server error") ? "error" : "info"}
+          severity={message.startsWith("❌") ? "error" : "success"}
           sx={{
             width: "100%",
             boxShadow: 3,
-            bgcolor: message.startsWith("Server error") ? "#FFEBEE" : "#E8F5E9",
-            color: message.startsWith("Server error") ? "#D32F2F" : "#00695C",
+            bgcolor: message.startsWith("❌") ? "#FFEBEE" : "#E8F5E9",
+            color: message.startsWith("❌") ? "#D32F2F" : "#00695C",
             fontFamily: "'Poppins', sans-serif",
           }}
         >

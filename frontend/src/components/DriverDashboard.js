@@ -35,13 +35,13 @@ import { motion } from "framer-motion";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
-import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import NavigationIcon from "@mui/icons-material/Navigation";
 import PersonIcon from "@mui/icons-material/Person";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import { baseURL } from "../utils/baseURL"; // Import baseURL
 
 // Custom Icons
 const ambulanceIcon = new L.Icon({
@@ -96,12 +96,12 @@ const DriverDashboard = () => {
           setLongitude(longitude);
           socket.emit("ambulance_location_update", { userId: user?.id, latitude, longitude });
         },
-        (error) => setMessage("Failed to get location: " + error.message),
+        (error) => setMessage("❌ Failed to get location: " + error.message),
         { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
       );
       return () => navigator.geolocation.clearWatch(watchId);
     } else {
-      setMessage("Geolocation is not supported.");
+      setMessage("❌ Geolocation is not supported.");
     }
   }, [user]);
 
@@ -112,14 +112,14 @@ const DriverDashboard = () => {
     socket.on("ambulance_assigned", (updatedEmergency) => {
       console.log("Received new assigned emergency:", updatedEmergency);
       setAssignedEmergencies((prev) => [...prev, updatedEmergency]);
-      setNotification({ open: true, message: "New emergency assigned!", severity: "warning" });
+      setNotification({ open: true, message: "🚨 New emergency assigned!", severity: "warning" });
       playAlertSound();
     });
 
     socket.on("patient_arrived", (emergency) => {
       console.log("Emergency marked as completed:", emergency);
       setAssignedEmergencies((prev) => prev.filter((e) => e._id !== emergency._id));
-      setNotification({ open: true, message: "An emergency has been completed!", severity: "success" });
+      setNotification({ open: true, message: "✅ An emergency has been completed!", severity: "success" });
     });
 
     socket.on(`patient_update_${user?.id}`, (updatedEmergency) => {
@@ -140,9 +140,9 @@ const DriverDashboard = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      if (!token) throw new Error("Please log in.");
+      if (!token) throw new Error("❌ Please log in.");
 
-      const response = await fetch("http://localhost:5000/api/emergency/assigned", {
+      const response = await fetch(`${baseURL}/emergency/assigned`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -159,7 +159,7 @@ const DriverDashboard = () => {
       setMessage(data.length === 0 ? "No assigned emergencies." : "");
     } catch (error) {
       console.error("Error fetching assigned emergencies:", error);
-      setMessage(error.message || "Unable to fetch emergencies.");
+      setMessage(error.message || "❌ Unable to fetch emergencies.");
     } finally {
       setLoading(false);
     }
@@ -168,9 +168,10 @@ const DriverDashboard = () => {
   const markCompleted = async (emergencyId) => {
     try {
       const token = localStorage.getItem("token");
-      if (!token) throw new Error("Please log in.");
+      if (!token) throw new Error("❌ Please log in.");
 
-      const response = await fetch(`http://localhost:5000/api/emergency/mark-completed/${emergencyId}`, {
+      setLoading(true); // Show loading state during request
+      const response = await fetch(`${baseURL}/emergency/mark-completed/${emergencyId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -185,12 +186,16 @@ const DriverDashboard = () => {
       const data = await response.json();
       console.log("Marked emergency as completed:", data);
       setAssignedEmergencies((prev) => prev.filter((e) => e._id !== emergencyId));
-      setMessage("Emergency completed!");
+      setMessage("✅ Emergency completed!");
       socket.emit("patient_arrived", data.emergency);
       socket.emit(`patient_update_${data.emergency.user_id}`, data.emergency);
+      setNotification({ open: true, message: "✅ Emergency marked as completed!", severity: "success" });
     } catch (error) {
       console.error("Error marking emergency as completed:", error);
-      setMessage(error.message || "Failed to mark as completed.");
+      setMessage(error.message || "❌ Failed to mark as completed.");
+      setNotification({ open: true, message: error.message || "❌ Failed to mark as completed!", severity: "error" });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -333,11 +338,15 @@ const DriverDashboard = () => {
               bgcolor: "#D32F2F",
               "&:hover": { bgcolor: "#C62828" },
               fontFamily: "'Poppins', sans-serif'",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
             onClick={() => markCompleted(emergency._id)}
-            startIcon={<CheckCircleIcon />}
+            startIcon={loading ? <CircularProgress size={20} sx={{ color: "#FFFFFF" }} /> : <CheckCircleIcon />}
+            disabled={loading}
           >
-            Mark as Completed
+            {loading ? "Processing..." : "Mark as Completed"}
           </Button>
           <Button
             variant="outlined"
@@ -372,7 +381,7 @@ const DriverDashboard = () => {
                 const url = `https://www.google.com/maps/dir/?api=1&destination=${emergency.coordinates.latitude},${emergency.coordinates.longitude}`;
                 window.open(url, "_blank");
               } else {
-                setMessage("No coordinates available for navigation.");
+                setMessage("❌ No coordinates available for navigation.");
               }
             }}
             startIcon={<NavigationIcon />}
@@ -460,13 +469,13 @@ const DriverDashboard = () => {
             sx={{
               p: 2,
               mb: 4,
-              bgcolor: message.includes("success") ? "#E8F5E9" : "#FFEBEE",
+              bgcolor: message.includes("success") || message.includes("completed") ? "#E8F5E9" : "#FFEBEE",
               borderRadius: 2,
             }}
           >
             <Typography
               sx={{
-                color: message.includes("success") ? "#00695C" : "#D32F2F",
+                color: message.includes("success") || message.includes("completed") ? "#00695C" : "#D32F2F",
                 textAlign: "center",
                 fontFamily: "'Poppins', sans-serif'",
               }}
