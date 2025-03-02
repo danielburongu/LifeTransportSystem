@@ -10,17 +10,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: (origin, callback) => {
-      const allowedOrigins = [
-        "http://localhost:3000",
-        "https://life-transport-system-zxel-nu.vercel.app",
-      ];
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: true, // Allow all origins for WebSocket (simplified)
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -28,17 +18,7 @@ const io = socketIo(server, {
 
 // Middleware
 app.use(cors({
-  origin: (origin, callback) => {
-    const allowedOrigins = [
-      "http://localhost:3000",
-      "https://life-transport-system-zxel-nu.vercel.app",
-    ];
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: true, // Allow all origins for HTTP requests (simplified)
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
 }));
@@ -48,32 +28,53 @@ app.use(express.urlencoded({ extended: true }));
 // Make io available to routes
 app.set("io", io);
 
-// Connect to MongoDB
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => {
-    console.error("❌ MongoDB Connection Error:", err.message);
-    // Do not exit—allow server to run and retry connection
-  });
+// Connect to MongoDB with reconnection logic
+const connectToMongoDB = () => {
+  mongoose
+    .connect(process.env.MONGO_URI)
+    .then(() => console.log("✅ MongoDB Connected"))
+    .catch((err) => {
+      console.error("❌ MongoDB Connection Error:", err.message);
+      console.log("Retrying MongoDB connection in 5 seconds...");
+      setTimeout(connectToMongoDB, 5000);
+    });
+};
+connectToMongoDB();
 
 // Import Models
-require("./src/models/User");
-require("./src/models/EmergencyRequest");
-require("./src/models/Ambulance");
+try {
+  require("./src/models/User");
+  require("./src/models/EmergencyRequest");
+  require("./src/models/Ambulance");
+  console.log("✅ Models loaded successfully");
+} catch (err) {
+  console.error("❌ Error loading models:", err.message);
+}
 
 // Import Routes
-const authRoutes = require("./src/routes/authRoutes");
-const emergencyRoutes = require("./src/routes/emergencyRoutes");
-const ambulanceRoutes = require("./src/routes/ambulanceRoutes")(io);
+let authRoutes, emergencyRoutes, ambulanceRoutes;
+try {
+  authRoutes = require("./src/routes/authRoutes");
+  emergencyRoutes = require("./src/routes/emergencyRoutes");
+  ambulanceRoutes = require("./src/routes/ambulanceRoutes")(io);
+  console.log("✅ Routes loaded successfully");
+} catch (err) {
+  console.error("❌ Error loading routes:", err.message);
+}
 
-// Use Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/emergency", emergencyRoutes);
-app.use("/api/ambulance", ambulanceRoutes);
+// Use Routes with logging
+app.use("/api/auth", (req, res, next) => {
+  console.log(`📡 ${req.method} request to /api/auth${req.path}`);
+  authRoutes(req, res, next);
+});
+app.use("/api/emergency", (req, res, next) => {
+  console.log(`📡 ${req.method} request to /api/emergency${req.path}`);
+  emergencyRoutes(req, res, next);
+});
+app.use("/api/ambulance", (req, res, next) => {
+  console.log(`📡 ${req.method} request to /api/ambulance${req.path}`);
+  ambulanceRoutes(req, res, next);
+});
 
 // WebSocket Connection Handling
 io.on("connection", (socket) => {
@@ -81,7 +82,7 @@ io.on("connection", (socket) => {
 
   socket.on("updateLocation", (data) => {
     console.log("📍 Received location update:", data);
-    io.emit("locationUpdated", data); // Broadcast location updates to all clients
+    io.emit("locationUpdated", data);
   });
 
   socket.on("disconnect", () => {
@@ -92,6 +93,11 @@ io.on("connection", (socket) => {
 // Default Route with health check
 app.get("/", (req, res) => {
   res.status(200).json({ message: "🚑 Welcome to Life Transport Systems API 🚑", status: "ok" });
+});
+
+// Test Route to Verify Fetching
+app.get("/api/test", (req, res) => {
+  res.status(200).json({ message: "Test endpoint working", timestamp: new Date().toISOString() });
 });
 
 // Error Handling Middleware
