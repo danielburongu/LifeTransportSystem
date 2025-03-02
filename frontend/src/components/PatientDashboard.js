@@ -29,7 +29,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
-import { baseURL } from "../utils/baseURL"; // Import baseURL
+import { baseURL } from "../utils/baseURL";
 
 // Custom Map Marker
 const customMarker = new L.Icon({
@@ -91,7 +91,7 @@ const PatientDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, []); // No dependencies since token is from localStorage and baseURL is static
+  }, []);
 
   const fetchCoordinates = useCallback(async (place) => {
     if (!place || place.length < 3) return;
@@ -134,7 +134,7 @@ const PatientDashboard = () => {
     });
 
     return () => socket.off(`patient_update_${user?.userId}`);
-  }, [user, fetchEmergencyRequests]); // fetchEmergencyRequests moved above and added to deps
+  }, [user, fetchEmergencyRequests]);
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {

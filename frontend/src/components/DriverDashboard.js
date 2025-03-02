@@ -41,7 +41,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import NavigationIcon from "@mui/icons-material/Navigation";
 import PersonIcon from "@mui/icons-material/Person";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import { baseURL } from "../utils/baseURL"; // Import baseURL
+import { baseURL } from "../utils/baseURL";
 
 // Custom Icons
 const ambulanceIcon = new L.Icon({

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Box, Typography, Button, CircularProgress } from "@mui/material"; // Added CircularProgress
+import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQrcode, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import Navbar from "../components/Navbar";
-import { baseURL } from "../utils/baseURL"; // Import baseURL
+import { baseURL } from "../utils/baseURL";
 
 const QrLogin = () => {
   const [isQrScannerActive, setIsQrScannerActive] = useState(true);
@@ -115,7 +115,7 @@ const QrLogin = () => {
   return (
     <Box
       className="w-full min-h-screen flex items-center justify-center m-0 p-0 mt-24"
-      sx={{ bgcolor: "#f5f5f5" }} // Consistent light gray background
+      sx={{ bgcolor: "#f5f5f5" }}
     >
       <motion.div
         className="bg-white p-6 md:p-12 rounded-lg shadow-lg w-full max-w-lg border border-red-600"

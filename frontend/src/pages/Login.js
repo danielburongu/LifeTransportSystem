@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { AuthContext } from "../context/AuthContext";
 import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import { Link } from "react-router-dom";
-import { baseURL } from "../utils/baseURL"; // Import updated baseURL
+import { baseURL } from "../utils/baseURL";
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ email: "", password: "" });

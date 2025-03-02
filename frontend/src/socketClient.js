@@ -7,10 +7,10 @@ const socketUrl = process.env.NODE_ENV === "production"
 
 // Connect to WebSocket server
 const socket = io(socketUrl, {
-  transports: ["websocket"], // Use WebSocket only for better compatibility
-  reconnection: true,        // Enable reconnection attempts
-  reconnectionAttempts: 5,   // Limit reconnection attempts
-  reconnectionDelay: 1000,   // Delay between reconnection attempts (ms)
+  transports: ["websocket"],
+  reconnection: true,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,   // Delays between reconnection attempts (ms)
 });
 
 // Connection event handlers
@@ -20,7 +20,7 @@ socket.on("connect", () => {
 
 socket.on("locationUpdated", (data) => {
   console.log("📍 New ambulance location update:", data);
-  // Update map markers or dispatch to state management (e.g., Redux) here if needed
+  // Updates map markers or dispatch to state management
 });
 
 socket.on("disconnect", () => {

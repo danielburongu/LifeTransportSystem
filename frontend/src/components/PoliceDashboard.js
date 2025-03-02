@@ -24,7 +24,7 @@ import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PersonIcon from "@mui/icons-material/Person";
-import { baseURL } from "../utils/baseURL"; // Import baseURL
+import { baseURL } from "../utils/baseURL";
 
 const PoliceDashboard = () => {
   const { user } = useContext(AuthContext);

@@ -27,7 +27,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
-import { baseURL } from "../utils/baseURL"; // Import baseURL
+import { baseURL } from "../utils/baseURL";
 
 // Styled components
 const DashboardCard = styled(Card)(({ theme }) => ({
@@ -57,8 +57,8 @@ const HospitalDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [dispatchLoading, setDispatchLoading] = useState(false); // Added for dispatch loading
-  const [arrivalLoading, setArrivalLoading] = useState(false); // Added for arrival loading
+  const [dispatchLoading, setDispatchLoading] = useState(false);
+  const [arrivalLoading, setArrivalLoading] = useState(false);
 
   useEffect(() => {
     console.log("🚀 Mounting Hospital Dashboard...");

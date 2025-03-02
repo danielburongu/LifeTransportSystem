@@ -5,7 +5,7 @@ The **Life Transport System** is a **an emergency response platform** designed t
 - **Ambulance Dispatch**
 - **Police Accident Verification** 
 - **Hospital Emergency Coordination** 
-- **Secure Access** via QR Code
+- **Easy Access via QR Code** 
 
 
 This system ensures **efficient, secure, and rapid** response to emergencies by integrating **users, emergency responders, and medical institutions** into a **unified digital framework**.
@@ -21,6 +21,8 @@ This system ensures **efficient, secure, and rapid** response to emergencies by 
 ✅ **Secure Role-Based Access Control** – Different dashboards for **police, hospital staff, and patients(citizens)**.  
 
 ---
+## Link to Initial software product/solution demonstration:
+🔗 **[View](https://drive.google.com/file/d/1BNOZCgXg3Q63gWx0FCylq2ahE0xS9F2u/view?usp=sharing)**
 
 ## Link to the deployed version of the web application:
 🔗 **[View](https://life-transport-system-zxel-nu.vercel.app/)**
@@ -45,8 +47,8 @@ npm install
 ```
 - Configure **.env**:
   ```env
-  MONGO_URI=your_mongodb_connection_string
-  JWT_SECRET=your_secret_key
+  MONGO_URI=_mongodb_connection_string
+  JWT_SECRET=_secret_key
   PORT=5000
   ```
 - Start Server:
@@ -69,9 +71,12 @@ npm start
 - **Wireframes & Mockups**: Created using **Figma**
 - **Style Guide**: Uses **Material UI + Tailwind CSS** for modern design.
 
-
-
 🔗 **[View initial Mockup Designs on Figma](https://www.figma.com/design/6yAeXnj47xGo2NNlevgpIS/Ambulance-Dispatch-System?node-id=0-1&t=bYbpTjP9XMgyfmsn-1)**
+
+
+🔗 **[screenshot 1 Initial software product/solution Design ](https://drive.google.com/file/d/1sZE-0zb98UQhxqtg5qvJNaT1-bobMCHm/view?usp=sharing)**
+
+🔗 **[screenshot 2 Initial software product/solution Design ](https://drive.google.com/file/d/1vf5aY2BlH_XWl1fyEC3L3CL6LIsg08Gs/view?usp=sharing)**
 
 ---
 
