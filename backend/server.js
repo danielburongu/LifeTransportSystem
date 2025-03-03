@@ -10,18 +10,13 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: true, // Allow all origins for WebSocket (simplified)
+    origin: "*", // Match original working local setup
     methods: ["GET", "POST"],
-    credentials: true,
   },
 });
 
 // Middleware
-app.use(cors({
-  origin: true, // Allow all origins for HTTP requests (simplified)
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true,
-}));
+app.use(cors()); // Simplest CORS setup, allows all origins
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
