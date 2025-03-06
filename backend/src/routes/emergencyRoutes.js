@@ -1,9 +1,168 @@
 const express = require("express");
+const axios = require("axios"); // Added for reverse geocoding
 const EmergencyRequest = require("../models/EmergencyRequest");
 const User = require("../models/User");
 const { verifyToken, verifyRole } = require("../middleware/authMiddleware");
 
 const router = express.Router();
+
+/**
+ * @route   POST /api/emergency/guest-request
+ * @desc    Create an emergency transport request for guests (unauthenticated)
+ * @access  Public
+ */
+router.post("/guest-request", async (req, res) => {
+  try {
+    const { latitude, longitude, emergency_type } = req.body;
+
+    // Basic validation for required fields
+    if (!latitude || !longitude || !emergency_type) {
+      return res.status(400).json({
+        message: "❌ Latitude, longitude, and emergency type are required.",
+      });
+    }
+
+    // Reverse geocode the coordinates to get a human-readable address
+    let location = "Unknown (Guest Request)";
+    try {
+      const response = await axios.get(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+      );
+      if (response.data && response.data.display_name) {
+        location = response.data.display_name;
+      }
+    } catch (geocodeError) {
+      console.error("❌ Error reverse geocoding location:", geocodeError.message);
+      // Fallback to placeholder if geocoding fails
+    }
+
+    const newRequest = new EmergencyRequest({
+      user_id: null, // No user ID for guest requests
+      location, // Use the geocoded address
+      emergency_type,
+      coordinates: {
+        latitude,
+        longitude,
+      },
+      plus_code: "", // Optional for guests
+      victim_name: "Unknown (Guest)", // Placeholder
+      victim_age: "",
+      victim_sex: "",
+      incident_description: "Guest-initiated emergency request via QR code.",
+      police_case_no: "",
+      status: "pending",
+      police_verification: false,
+    });
+
+    await newRequest.save();
+
+    const io = req.app.get("io");
+    if (io) {
+      console.log("📡 Broadcasting new guest accident report for police verification...");
+      io.emit("new_accident_report", newRequest);
+    }
+
+    res.status(201).json({ message: "✅ Emergency request submitted successfully!", request: newRequest });
+  } catch (error) {
+    console.error("❌ Error processing guest emergency request:", error);
+    res.status(500).json({ message: "❌ Server error. Please try again later." });
+  }
+});
+
+/**
+ * @route   GET /api/emergency/guest-request
+ * @desc    Serve a mobile-friendly page for guest emergency requests
+ * @access  Public
+ */
+router.get("/guest-request", (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Emergency Request</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f5f5f5; }
+        h1 { color: #00695C; }
+        p { color: #666; }
+        button { background-color: #D32F2F; color: white; padding: 15px 30px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin: 10px; }
+        button:hover { background-color: #C62828; }
+        .error { color: red; }
+        .success { color: green; }
+        #status { margin-top: 20px; }
+      </style>
+    </head>
+    <body>
+      <h1>Request Emergency Help</h1>
+      <p>Click the button below to send an emergency request with your location.</p>
+      <button id="requestButton" onclick="sendEmergencyRequest()">Send Emergency Request</button>
+      <p id="status"></p>
+      <script>
+        function sendEmergencyRequest() {
+          const status = document.getElementById("status");
+          const requestButton = document.getElementById("requestButton");
+          status.textContent = "Requesting location...";
+          status.className = "";
+          requestButton.disabled = true;
+
+          if (!navigator.geolocation) {
+            status.textContent = "❌ Geolocation is not supported by your browser.";
+            status.className = "error";
+            requestButton.disabled = false;
+            return;
+          }
+
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              const { latitude, longitude } = position.coords;
+              try {
+                const response = await fetch(window.location.href, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ latitude, longitude, emergency_type: "unspecified" }),
+                });
+                const result = await response.json();
+                if (response.ok) {
+                  status.textContent = "✅ " + result.message;
+                  status.className = "success";
+                  requestButton.textContent = "Send Another Request";
+                  requestButton.disabled = false;
+                } else {
+                  status.textContent = "❌ " + (result.message || "Failed to process request.");
+                  status.className = "error";
+                  requestButton.disabled = false;
+                }
+              } catch (err) {
+                status.textContent = "❌ Network error. Please try again.";
+                status.className = "error";
+                requestButton.disabled = false;
+              }
+            },
+            (error) => {
+              let message = "❌ Unable to get your location.";
+              switch (error.code) {
+                case error.PERMISSION_DENIED:
+                  message = "❌ Location access denied. Please allow permissions in your browser settings, then try again.";
+                  break;
+                case error.POSITION_UNAVAILABLE:
+                  message = "❌ Location information unavailable.";
+                  break;
+                case error.TIMEOUT:
+                  message = "❌ Location request timed out.";
+                  break;
+              }
+              status.textContent = message;
+              status.className = "error";
+              requestButton.disabled = false;
+            },
+            { timeout: 10000, maximumAge: 0 }
+          );
+        }
+      </script>
+    </body>
+    </html>
+  `);
+});
 
 /**
  * @route   POST /api/emergency/request
