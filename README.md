@@ -1,7 +1,7 @@
-# Life Transport System
+# Life-Ride Transport System
 
 ## Project Overview
-The **Life Transport System** is a **an emergency response platform** designed to streamline:
+The **Life-Ride Transport System** is a **an emergency response platform** designed to streamline:
 - **Ambulance Dispatch**
 - **Police Accident Verification** 
 - **Hospital Emergency Coordination** 

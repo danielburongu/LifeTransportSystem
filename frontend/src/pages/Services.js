@@ -16,9 +16,49 @@ import {
   faListAlt,
   faTag,
   faUserInjured,
+  faChevronUp,
+  faCommentDots,
+  faQuestionCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
+
+// Custom Styles for Modern Look
+const styles = `
+  .glass-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+  }
+  .section-divider {
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(to right, #EF4444, #F97316);
+    margin: 1rem auto;
+    border-radius: 2px;
+  }
+  .bg-gradient {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e5e7eb 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .bg-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.05);
+    z-index: 0;
+  }
+  .hover-scale {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .hover-scale:hover {
+    transform: scale(1.03);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  }
+`;
 
 const Services = () => {
   const services = [
@@ -117,6 +157,28 @@ const Services = () => {
     },
   ];
 
+  const testimonials = [
+    {
+      quote: "Life Ride saved my life during a car accident. They arrived in minutes!",
+      author: "Sarah M., Kampala",
+    },
+    {
+      quote: "The app’s real-time tracking gave me peace of mind during a medical emergency.",
+      author: "John K., Nairobi",
+    },
+  ];
+
+  const faqs = [
+    {
+      question: "How quickly can I expect a response?",
+      answer: "Our average response time is 2.5 minutes, depending on your location.",
+    },
+    {
+      question: "Is the service available 24/7?",
+      answer: "Yes, we operate 24/7 to ensure you’re never alone in an emergency.",
+    },
+  ];
+
   const statusStyles = {
     pending: "bg-yellow-500 text-white",
     verified: "bg-blue-500 text-white",
@@ -125,271 +187,326 @@ const Services = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
+    <div className="flex flex-col min-h-screen bg-gradient relative">
+      <style>{styles}</style>
+      <div className="bg-overlay"></div>
       <Navbar />
-      <div className="flex-1 py-16">
-        <div className="container mx-auto px-6">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
-            <h1 className="text-4xl md:text-5xl font-bold text-teal-700 mb-4 mt-6">
-              Discover Our Services
-            </h1>
-            <div className="w-24 h-1 bg-red-600 mx-auto"></div>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-              Life Transport: Swift, reliable emergency solutions.
-            </p>
-          </motion.div>
+      <div className="flex-1 py-16 px-6 relative z-10">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
+        >
+          <h1 className="text-5xl md:text-6xl font-extrabold text-teal-900 mb-4 mt-8">
+            Discover Our Services
+          </h1>
+          <div className="section-divider"></div>
+          <p className="text-gray-700 text-lg mt-4 max-w-2xl mx-auto">
+            LifeRide: Swift, reliable emergency solutions.
+          </p>
+        </motion.div>
 
-          {/* Services Section */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            {services.map(({ icon, heading, text }, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: idx * 0.15 }}
-                className="bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center"
-                whileHover={{ y: -5 }}
-              >
-                <FontAwesomeIcon icon={icon} className="text-red-600 text-3xl mb-3" />
-                <h3 className="text-xl font-bold text-teal-700 mb-2">{heading}</h3>
-                <p className="text-gray-600 text-center text-sm">{text}</p>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Police Accident Verification Process Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-2xl md:text-3xl font-bold text-teal-700 mb-4">
-              How We Respond
-            </h2>
-            <div className="w-24 h-1 bg-red-600 mx-auto"></div>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-              Our streamlined process for rapid emergency action.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            {processSteps.map(({ icon, heading, text }, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: idx * 0.15 + 0.45 }}
-                className="bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center"
-                whileHover={{ y: -5 }}
-              >
-                <FontAwesomeIcon icon={icon} className="text-red-600 text-3xl mb-3" />
-                <h3 className="text-lg font-bold text-teal-700 mb-2">{heading}</h3>
-                <p className="text-gray-600 text-center text-sm">{text}</p>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Hospital Command Center Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-2xl md:text-3xl font-bold text-teal-700 mb-4">
-              Hospital Command Hub
-            </h2>
-            <div className="w-24 h-1 bg-red-600 mx-auto"></div>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-              Ready hospitals, coordinating arrivals in real time.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-            {additionalFeatures.map(({ icon, heading, text }, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: idx * 0.15 + 0.75 }}
-                className="bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center"
-                whileHover={{ y: -5 }}
-              >
-                <FontAwesomeIcon icon={icon} className="text-red-600 text-3xl mb-3" />
-                <h3 className="text-lg font-bold text-teal-700 mb-2">{heading}</h3>
-                <p className="text-gray-600 text-center text-sm">{text}</p>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Emergency Request Process Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.9 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-2xl md:text-3xl font-bold text-teal-700 mb-4">
-              Citizen Control Panel
-            </h2>
-            <div className="w-24 h-1 bg-red-600 mx-auto"></div>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-              Easy tools to manage your emergency needs.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-            {requestProcess.map(({ icon, heading, text }, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: idx * 0.15 + 1.05 }}
-                className="bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center"
-                whileHover={{ y: -5 }}
-              >
-                <FontAwesomeIcon icon={icon} className="text-red-600 text-3xl mb-3" />
-                <h3 className="text-lg font-bold text-teal-700 mb-2">{heading}</h3>
-                <p className="text-gray-600 text-center text-sm">{text}</p>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Live Map Feature */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.2 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-2xl md:text-3xl font-bold text-teal-700 mb-4">
-              Real-Time Map
-            </h2>
-            <div className="w-24 h-1 bg-red-600 mx-auto"></div>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-              Watch your location and responders live with GPS precision.
-            </p>
-            <div className="mt-6 bg-gray-300 h-48 rounded-2xl flex items-center justify-center">
-              <FontAwesomeIcon icon={faMapMarkedAlt} className="text-teal-700 text-5xl" />
-              <p className="ml-3 text-gray-600 text-sm">Map access after sign-up!</p>
-            </div>
-          </motion.div>
-
-          {/* Tracking and Selection Features */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.35 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-2xl md:text-3xl font-bold text-teal-700 mb-4">
-              Emergency Dashboard
-            </h2>
-            <div className="w-24 h-1 bg-red-600 mx-auto"></div>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-              Monitor and customize your emergency response.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            {trackingFeatures.map(({ icon, heading, text }, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: idx * 0.15 + 1.5 }}
-                className="bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center"
-                whileHover={{ y: -5 }}
-              >
-                <FontAwesomeIcon icon={icon} className="text-red-600 text-3xl mb-3" />
-                <h3 className="text-lg font-bold text-teal-700 mb-2">{heading}</h3>
-                <p className="text-gray-600 text-center text-sm">{text}</p>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Mock Request Cards */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.65 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-2xl md:text-3xl font-bold text-teal-700 mb-4">
-              Sample Emergency Tracking
-            </h2>
-            <div className="w-24 h-1 bg-red-600 mx-auto"></div>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-              Preview how your requests look in action.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-            {mockRequests.map(({ type, status, location, time }, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: idx * 0.15 + 1.8 }}
-                className="bg-white p-4 rounded-2xl shadow-lg flex flex-col items-start"
-                whileHover={{ y: -5 }}
-              >
-                <div className="flex justify-between w-full mb-2">
-                  <h3 className="text-lg font-bold text-teal-700">{type}</h3>
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusStyles[status]}`}>
-                    {status.toUpperCase()}
-                  </span>
-                </div>
-                <p className="text-gray-600 text-sm flex items-center mb-1">
-                  <FontAwesomeIcon icon={faMapMarkerAlt} className="text-red-600 mr-2" /> {location}
-                </p>
-                <p className="text-gray-600 text-sm flex items-center">
-                  <FontAwesomeIcon icon={faClock} className="text-red-600 mr-2" /> {time}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Driver Assignment Teaser */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 2.1 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-2xl md:text-3xl font-bold text-teal-700 mb-4">
-              Skilled Driver Team
-            </h2>
-            <div className="w-24 h-1 bg-red-600 mx-auto"></div>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-              Expert drivers assigned instantly by hospitals.
-            </p>
-          </motion.div>
-
-          {/* Call-to-Action */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 2.25 }}
-            className="text-center mb-12"
-          >
-            <p className="text-gray-600 mb-4">
-              Join thousands relying on our life-saving services.
-            </p>
-            <Link to="/register">
-              <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full text-lg font-bold transition-all duration-300 shadow-lg">
-                Get Started
-              </button>
-            </Link>
-          </motion.div>
+        {/* Services Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-16">
+          {services.map(({ icon, heading, text }, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: idx * 0.15 }}
+              className="glass-card flex flex-col items-center text-center hover-scale"
+            >
+              <FontAwesomeIcon icon={icon} className="text-red-500 text-4xl mb-4" />
+              <h3 className="text-xl font-bold text-teal-800 mb-2">{heading}</h3>
+              <p className="text-gray-700">{text}</p>
+            </motion.div>
+          ))}
         </div>
+
+        {/* Police Accident Verification Process Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl font-bold text-teal-800 mb-4">How We Respond</h2>
+          <div className="section-divider"></div>
+          <p className="text-gray-700 text-lg mt-4 max-w-2xl mx-auto">
+            Our streamlined process for rapid emergency action.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-16">
+          {processSteps.map(({ icon, heading, text }, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: idx * 0.15 + 0.45 }}
+              className="glass-card flex flex-col items-center text-center hover-scale"
+            >
+              <FontAwesomeIcon icon={icon} className="text-red-500 text-4xl mb-4" />
+              <h3 className="text-xl font-bold text-teal-800 mb-2">{heading}</h3>
+              <p className="text-gray-700">{text}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Hospital Command Center Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl font-bold text-teal-800 mb-4">Hospital Command Hub</h2>
+          <div className="section-divider"></div>
+          <p className="text-gray-700 text-lg mt-4 max-w-2xl mx-auto">
+            Ready hospitals, coordinating arrivals in real time.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-16">
+          {additionalFeatures.map(({ icon, heading, text }, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: idx * 0.15 + 0.75 }}
+              className="glass-card flex flex-col items-center text-center hover-scale"
+            >
+              <FontAwesomeIcon icon={icon} className="text-red-500 text-4xl mb-4" />
+              <h3 className="text-xl font-bold text-teal-800 mb-2">{heading}</h3>
+              <p className="text-gray-700">{text}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Emergency Request Process Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.9 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl font-bold text-teal-800 mb-4">Citizen Control Panel</h2>
+          <div className="section-divider"></div>
+          <p className="text-gray-700 text-lg mt-4 max-w-2xl mx-auto">
+            Easy tools to manage your emergency needs.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-16">
+          {requestProcess.map(({ icon, heading, text }, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: idx * 0.15 + 1.05 }}
+              className="glass-card flex flex-col items-center text-center hover-scale"
+            >
+              <FontAwesomeIcon icon={icon} className="text-red-500 text-4xl mb-4" />
+              <h3 className="text-xl font-bold text-teal-800 mb-2">{heading}</h3>
+              <p className="text-gray-700">{text}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Live Map Feature */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.2 }}
+          className="text-center mb-12 max-w-5xl mx-auto"
+        >
+          <h2 className="text-3xl font-bold text-teal-800 mb-4">Real-Time Map</h2>
+          <div className="section-divider"></div>
+          <p className="text-gray-700 text-lg mt-4 max-w-2xl mx-auto">
+            Watch your location and responders live with GPS precision.
+          </p>
+          <div className="mt-6 glass-card h-48 flex items-center justify-center">
+            <FontAwesomeIcon icon={faMapMarkedAlt} className="text-teal-700 text-5xl" />
+            <p className="ml-3 text-gray-700 text-sm">Map access after sign-up!</p>
+          </div>
+        </motion.div>
+
+        {/* Tracking and Selection Features */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.35 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl font-bold text-teal-800 mb-4">Emergency Dashboard</h2>
+          <div className="section-divider"></div>
+          <p className="text-gray-700 text-lg mt-4 max-w-2xl mx-auto">
+            Monitor and customize your emergency response.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-16">
+          {trackingFeatures.map(({ icon, heading, text }, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: idx * 0.15 + 1.5 }}
+              className="glass-card flex flex-col items-center text-center hover-scale"
+            >
+              <FontAwesomeIcon icon={icon} className="text-red-500 text-4xl mb-4" />
+              <h3 className="text-xl font-bold text-teal-800 mb-2">{heading}</h3>
+              <p className="text-gray-700">{text}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Mock Request Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.65 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl font-bold text-teal-800 mb-4">Sample Emergency Tracking</h2>
+          <div className="section-divider"></div>
+          <p className="text-gray-700 text-lg mt-4 max-w-2xl mx-auto">
+            Preview how your requests look in action.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-16">
+          {mockRequests.map(({ type, status, location, time }, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: idx * 0.15 + 1.8 }}
+              className="glass-card flex flex-col items-start hover-scale p-4"
+            >
+              <div className="flex justify-between w-full mb-2">
+                <h3 className="text-lg font-bold text-teal-800">{type}</h3>
+                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusStyles[status]}`}>
+                  {status.toUpperCase()}
+                </span>
+              </div>
+              <p className="text-gray-700 text-sm flex items-center mb-1">
+                <FontAwesomeIcon icon={faMapMarkerAlt} className="text-red-500 mr-2" /> {location}
+              </p>
+              <p className="text-gray-700 text-sm flex items-center">
+                <FontAwesomeIcon icon={faClock} className="text-red-500 mr-2" /> {time}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Driver Assignment Teaser */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 2.1 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl font-bold text-teal-800 mb-4">Skilled Driver Team</h2>
+          <div className="section-divider"></div>
+          <p className="text-gray-700 text-lg mt-4 max-w-2xl mx-auto">
+            Expert drivers assigned instantly by hospitals.
+          </p>
+        </motion.div>
+
+        {/* Testimonials Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 2.25 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl font-bold text-teal-800 mb-4">What Our Users Say</h2>
+          <div className="section-divider"></div>
+          <p className="text-gray-700 text-lg mt-4 max-w-2xl mx-auto">
+            Hear from those who’ve experienced our life-saving services.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-16">
+          {testimonials.map(({ quote, author }, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: idx * 0.15 + 2.4 }}
+              className="glass-card flex flex-col items-center text-center hover-scale p-6"
+            >
+              <FontAwesomeIcon icon={faCommentDots} className="text-red-500 text-3xl mb-4" />
+              <p className="text-gray-700 italic mb-4">"{quote}"</p>
+              <p className="text-teal-800 font-semibold">{author}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* FAQs Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 2.55 }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl font-bold text-teal-800 mb-4">Frequently Asked Questions</h2>
+          <div className="section-divider"></div>
+          <p className="text-gray-700 text-lg mt-4 max-w-2xl mx-auto">
+            Answers to common questions about our services.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-16">
+          {faqs.map(({ question, answer }, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: idx * 0.15 + 2.7 }}
+              className="glass-card flex flex-col items-center text-center hover-scale p-6"
+            >
+              <FontAwesomeIcon icon={faQuestionCircle} className="text-red-500 text-3xl mb-4" />
+              <h3 className="text-xl font-bold text-teal-800 mb-2">{question}</h3>
+              <p className="text-gray-700">{answer}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Call-to-Action */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 2.85 }}
+          className="text-center mb-12"
+        >
+          <p className="text-gray-700 text-lg mb-4">
+            Join thousands relying on our life-saving services.
+          </p>
+          <Link to="/register">
+            <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full text-lg font-bold transition-all duration-300 shadow-lg">
+              Get Started
+            </button>
+          </Link>
+        </motion.div>
+
+        {/* Back to Top Button */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 3 }}
+          className="fixed bottom-8 right-8"
+        >
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="bg-teal-600 hover:bg-teal-700 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300"
+          >
+            <FontAwesomeIcon icon={faChevronUp} className="text-xl" />
+          </button>
+        </motion.div>
       </div>
     </div>
   );

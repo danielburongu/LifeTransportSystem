@@ -4,12 +4,12 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
-import Home from "./pages/Home"; // New Home Page
-import PrivacyPolicy from "./pages/PrivacyPolicy"; // New Page
-import AboutUs from "./pages/AboutUs"; // New Page
-import Contact from "./pages/Contact"; // New Page
-import Services from "./pages/Services"; // New Page
-import QrLogin from "./pages/QrLogin"; // New QR Login Page
+import Home from "./pages/Home";
+import PrivacyPolicy from "./pages/PrivacyPolicy"; 
+import AboutUs from "./pages/AboutUs"; 
+import Contact from "./pages/Contact"; 
+import Services from "./pages/Services";
+import QrLogin from "./pages/QrLogin";
 import PoliceDashboard from "./components/PoliceDashboard";
 import HospitalDashboard from "./components/HospitalDashboard";
 import DriverDashboard from "./components/DriverDashboard";
@@ -19,9 +19,9 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 const App = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
+    <div className="min-h-screen flex flex-col bg-gray-100 w-full">
       <Navbar />
-      <main className="flex-1 container mx-auto px-6">
+      <main className="flex-1 w-full">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />

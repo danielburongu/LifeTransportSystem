@@ -28,10 +28,13 @@ import {
   FormControl,
   LinearProgress,
   Chip,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import { motion } from "framer-motion";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
@@ -41,7 +44,9 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import NavigationIcon from "@mui/icons-material/Navigation";
 import PersonIcon from "@mui/icons-material/Person";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import { baseURL } from "../utils/baseURL";
+import { useNavigate } from "react-router-dom";
 
 // Custom Icons
 const ambulanceIcon = new L.Icon({
@@ -64,14 +69,41 @@ const cardVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
+// Haversine formula to calculate distance (in kilometers)
+const haversineDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in kilometers
+};
+
+// Calculate ETA (in minutes) based on distance and average speed (40 km/h)
+const calculateETA = (distance) => {
+  const speed = 40; // Average speed in km/h
+  const timeInHours = distance / speed;
+  return Math.round(timeInHours * 60); // Convert to minutes
+};
+
 const DriverDashboard = () => {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate(); // Added for navigation
   const [assignedEmergencies, setAssignedEmergencies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
-  const [notification, setNotification] = useState({ open: false, message: "", severity: "info" });
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
   const [darkMode, setDarkMode] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [selectedEmergency, setSelectedEmergency] = useState(null);
@@ -86,6 +118,10 @@ const DriverDashboard = () => {
     palette: { mode: darkMode ? "dark" : "light" },
   });
 
+  // Status and Priority color mappings
+  const statusColors = { dispatched: "warning", completed: "success" };
+  const priorityColors = { High: "#D32F2F", Medium: "#FF9800", Low: "#00695C" };
+
   // Real-time Location
   useEffect(() => {
     if (navigator.geolocation) {
@@ -94,9 +130,13 @@ const DriverDashboard = () => {
           const { latitude, longitude } = position.coords;
           setLatitude(latitude);
           setLongitude(longitude);
-          socket.emit("ambulance_location_update", { userId: user?.id, latitude, longitude });
+          socket.emit("ambulance_location_update", {
+            userId: user?.id,
+            latitude,
+            longitude,
+          });
         },
-        (error) => setMessage("❌ Failed to get location: " + error.message),
+        (error) => setMessage(`❌ Failed to get location: ${error.message}`),
         { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
       );
       return () => navigator.geolocation.clearWatch(watchId);
@@ -112,14 +152,24 @@ const DriverDashboard = () => {
     socket.on("ambulance_assigned", (updatedEmergency) => {
       console.log("Received new assigned emergency:", updatedEmergency);
       setAssignedEmergencies((prev) => [...prev, updatedEmergency]);
-      setNotification({ open: true, message: "🚨 New emergency assigned!", severity: "warning" });
+      setNotification({
+        open: true,
+        message: "🚨 New emergency assigned!",
+        severity: "warning",
+      });
       playAlertSound();
     });
 
     socket.on("patient_arrived", (emergency) => {
       console.log("Emergency marked as completed:", emergency);
-      setAssignedEmergencies((prev) => prev.filter((e) => e._id !== emergency._id));
-      setNotification({ open: true, message: "✅ An emergency has been completed!", severity: "success" });
+      setAssignedEmergencies((prev) =>
+        prev.filter((e) => e._id !== emergency._id)
+      );
+      setNotification({
+        open: true,
+        message: "✅ An emergency has been completed!",
+        severity: "success",
+      });
     });
 
     socket.on(`patient_update_${user?.id}`, (updatedEmergency) => {
@@ -127,6 +177,11 @@ const DriverDashboard = () => {
       setAssignedEmergencies((prev) =>
         prev.map((e) => (e._id === updatedEmergency._id ? updatedEmergency : e))
       );
+      setNotification({
+        open: true,
+        message: `✅ Emergency status updated to ${updatedEmergency.status}!`,
+        severity: "info",
+      });
     });
 
     return () => {
@@ -146,17 +201,19 @@ const DriverDashboard = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        const text = await response.text();
-        throw new Error("Invalid response: " + text);
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error(" No emergencies assigned to you yet.");
+        }
+        throw new Error(
+          `❌ An error occurred while fetching emergencies (Status: ${response.status}).`
+        );
       }
 
       const data = await response.json();
       console.log("Fetched assigned emergencies:", data);
       setAssignedEmergencies(data);
-      setMessage(data.length === 0 ? "No assigned emergencies." : "");
+      if (data.length === 0) setMessage("No assigned emergencies.");
     } catch (error) {
       console.error("Error fetching assigned emergencies:", error);
       setMessage(error.message || "❌ Unable to fetch emergencies.");
@@ -166,34 +223,47 @@ const DriverDashboard = () => {
   };
 
   const markCompleted = async (emergencyId) => {
+    setLoading(true);
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("❌ Please log in.");
 
-      setLoading(true); // Show loading state during request
-      const response = await fetch(`${baseURL}/emergency/mark-completed/${emergencyId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${baseURL}/emergency/mark-completed/${emergencyId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) throw new Error("Invalid response");
-
+      if (!response.ok)
+        throw new Error(
+          `❌ Failed to mark emergency as completed (Status: ${response.status}).`
+        );
       const data = await response.json();
       console.log("Marked emergency as completed:", data);
-      setAssignedEmergencies((prev) => prev.filter((e) => e._id !== emergencyId));
+      setAssignedEmergencies((prev) =>
+        prev.filter((e) => e._id !== emergencyId)
+      );
       setMessage("✅ Emergency completed!");
       socket.emit("patient_arrived", data.emergency);
       socket.emit(`patient_update_${data.emergency.user_id}`, data.emergency);
-      setNotification({ open: true, message: "✅ Emergency marked as completed!", severity: "success" });
+      setNotification({
+        open: true,
+        message: "✅ Emergency marked as completed!",
+        severity: "success",
+      });
     } catch (error) {
       console.error("Error marking emergency as completed:", error);
       setMessage(error.message || "❌ Failed to mark as completed.");
-      setNotification({ open: true, message: error.message || "❌ Failed to mark as completed!", severity: "error" });
+      setNotification({
+        open: true,
+        message: error.message || "❌ Failed to mark as completed!",
+        severity: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -217,7 +287,8 @@ const DriverDashboard = () => {
   });
 
   const filteredEmergencies = sortedEmergencies.filter((emergency) => {
-    const matchesPriority = filterPriority === "All" || emergency.priority === filterPriority;
+    const matchesPriority =
+      filterPriority === "All" || emergency.priority === filterPriority;
     const matchesSearch =
       emergency.emergency_type.toLowerCase().includes(searchQuery.toLowerCase()) ||
       emergency.location.toLowerCase().includes(searchQuery.toLowerCase());
@@ -240,15 +311,30 @@ const DriverDashboard = () => {
 
     const progress = Math.min((timeElapsed / maxTime) * 100, 100);
 
+    // Calculate distance and ETA
+    const distance =
+      latitude && longitude && emergency.coordinates
+        ? haversineDistance(
+            latitude,
+            longitude,
+            emergency.coordinates.latitude,
+            emergency.coordinates.longitude
+          ).toFixed(2)
+        : null;
+    const eta = distance ? calculateETA(distance) : null;
+
     return (
       <Card
         sx={{
           borderRadius: 3,
           boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
-          bgcolor: emergency.priority === "High" ? "#ffebee" : emergency.priority === "Medium" ? "#fff3e0" : "#e3f2fd",
-          borderLeft: `4px solid ${
-            emergency.priority === "High" ? "#D32F2F" : emergency.priority === "Medium" ? "#FF9800" : "#00695C"
-          }`,
+          bgcolor:
+            emergency.priority === "High"
+              ? "#ffebee"
+              : emergency.priority === "Medium"
+              ? "#fff3e0"
+              : "#e3f2fd",
+          borderLeft: `4px solid ${priorityColors[emergency.priority || "Low"]}`,
           p: 2,
         }}
       >
@@ -256,63 +342,55 @@ const DriverDashboard = () => {
           <Box sx={{ textAlign: "center", mb: 2 }}>
             <ReportProblemIcon sx={{ fontSize: 40, color: "#D32F2F" }} />
           </Box>
-          <Typography
-            variant="h6"
-            fontWeight="bold"
-            sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}
+          <Box
+            sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}
           >
-            {emergency.emergency_type.toUpperCase()} ({emergency.priority || "Low"})
+            <Typography
+              variant="h6"
+              fontWeight="bold"
+              sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}
+            >
+              {emergency.emergency_type.toUpperCase()} ({emergency.priority || "Low"})
+            </Typography>
+            <Chip
+              label={emergency.status.toUpperCase()}
+              color={statusColors[emergency.status] || "default"}
+              size="small"
+              sx={{ fontWeight: 500, fontFamily: "'Poppins', sans-serif'" }}
+            />
+          </Box>
+          <Typography variant="body2" sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}>
+            <LocationOnIcon sx={{ verticalAlign: "middle", mr: 0.5, color: "#D32F2F" }} />{" "}
+            {emergency.location}
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}
-          >
-            <LocationOnIcon sx={{ verticalAlign: "middle", mr: 0.5, color: "#D32F2F" }} /> {emergency.location}
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}
-          >
+          <Typography variant="body2" sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}>
             <AccessTimeIcon sx={{ verticalAlign: "middle", mr: 0.5, color: "#D32F2F" }} />
             {new Date(emergency.createdAt).toLocaleString()}
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}
-          >
+          <Typography variant="body2" sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}>
             <PersonIcon sx={{ verticalAlign: "middle", mr: 0.5, color: "#D32F2F" }} />
             {emergency.victim_name || "Not provided"}
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}
-          >
+          <Typography variant="body2" sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}>
             Age: {emergency.victim_age || "Not provided"}
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}
-          >
+          <Typography variant="body2" sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}>
             Sex: {emergency.victim_sex || "Not provided"}
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}
-          >
+          <Typography variant="body2" sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}>
             Police Case No: {emergency.police_case_no || "Not provided"}
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{ fontFamily: "'Poppins', sans-serif'", mb: 2 }}
-          >
+          <Typography variant="body2" sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}>
             Description: {emergency.incident_description || "Not provided"}
           </Typography>
-          <Chip
-            label={emergency.status}
-            color={emergency.status === "dispatched" ? "warning" : "success"}
-            size="small"
-            sx={{ mb: 2, fontFamily: "'Poppins', sans-serif'" }}
-          />
+          {distance && eta && (
+            <Typography
+              variant="body2"
+              sx={{ color: "#616161", mb: 2, fontFamily: "'Poppins', sans-serif'" }}
+            >
+              Distance: {distance} km | ETA: {eta} min
+            </Typography>
+          )}
           <LinearProgress
             variant="determinate"
             value={progress}
@@ -338,12 +416,16 @@ const DriverDashboard = () => {
               bgcolor: "#D32F2F",
               "&:hover": { bgcolor: "#C62828" },
               fontFamily: "'Poppins', sans-serif'",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              mb: 1,
             }}
             onClick={() => markCompleted(emergency._id)}
-            startIcon={loading ? <CircularProgress size={20} sx={{ color: "#FFFFFF" }} /> : <CheckCircleIcon />}
+            startIcon={
+              loading ? (
+                <CircularProgress size={20} sx={{ color: "#FFFFFF" }} />
+              ) : (
+                <CheckCircleIcon />
+              )
+            }
             disabled={loading}
           >
             {loading ? "Processing..." : "Mark as Completed"}
@@ -386,7 +468,7 @@ const DriverDashboard = () => {
             }}
             startIcon={<NavigationIcon />}
           >
-            Navigate
+            Navigate {distance ? `(${distance} km, ${eta} min)` : ""}
           </Button>
         </CardContent>
       </Card>
@@ -398,65 +480,89 @@ const DriverDashboard = () => {
       <Container
         maxWidth="lg"
         sx={{
-          py: 6,
           mt: 10,
+          pb: 4,
           bgcolor: "#f5f5f5",
+          minHeight: "100vh",
         }}
       >
-        {/* Dark Mode Toggle */}
-        <Button
-          onClick={() => setDarkMode(!darkMode)}
-          sx={{
-            position: "absolute",
-            top: 10,
-            right: 10,
-            color: "#D32F2F",
-            "&:hover": { color: "#C62828" },
-          }}
-        >
-          {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
-        </Button>
-
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <Typography
-            variant="h3"
+          <Box
             sx={{
-              textAlign: "center",
-              fontWeight: "bold",
-              color: "#00695C",
+              bgcolor: "#00695C",
+              color: "#FFFFFF",
+              p: 3,
+              borderRadius: 2,
               mb: 4,
-              fontFamily: "'Poppins', sans-serif'",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
             }}
           >
-            Driver Dashboard
-          </Typography>
+            <Box display="flex" alignItems="center">
+              <DirectionsCarIcon sx={{ fontSize: 40, mr: 2, color: "#FFFFFF" }} />
+              <Box>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: 700,
+                    letterSpacing: 1,
+                    color: "#FFFFFF",
+                    fontFamily: "'Poppins', sans-serif",
+                  }}
+                >
+                  Driver Dashboard
+                </Typography>
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    color: "#E0E0E0",
+                    fontFamily: "'Poppins', sans-serif",
+                  }}
+                >
+                  Manage Assigned Emergencies
+                </Typography>
+              </Box>
+            </Box>
+            <Tooltip title="Toggle Dark Mode">
+              <IconButton
+                onClick={() => setDarkMode(!darkMode)}
+                sx={{ color: "#FFFFFF", "&:hover": { color: "#E0E0E0" } }}
+              >
+                {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+              </IconButton>
+            </Tooltip>
+          </Box>
         </motion.div>
 
         {/* Driver Status */}
-        <Box sx={{ display: "flex", gap: 2, mb: 4, justifyContent: "center" }}>
-          <Typography
-            variant="h6"
-            sx={{ fontFamily: "'Poppins', sans-serif'" }}
-          >
-            Status:
-          </Typography>
-          <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel sx={{ fontFamily: "'Poppins', sans-serif'" }}>Status</InputLabel>
+        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mb: 4 }}>
+          <FormControl sx={{ minWidth: 200 }}>
+            <InputLabel sx={{ fontFamily: "'Poppins', sans-serif'" }}>Driver Status</InputLabel>
             <Select
               value={driverStatus}
               onChange={(e) => {
                 setDriverStatus(e.target.value);
-                socket.emit("driver_status_update", { userId: user?.id, status: e.target.value });
+                socket.emit("driver_status_update", {
+                  userId: user?.id,
+                  status: e.target.value,
+                });
               }}
+              label="Driver Status"
               sx={{ fontFamily: "'Poppins', sans-serif'" }}
             >
-              <MenuItem value="Available" sx={{ fontFamily: "'Poppins', sans-serif'" }}>Available</MenuItem>
-              <MenuItem value="En Route" sx={{ fontFamily: "'Poppins', sans-serif'" }}>En Route</MenuItem>
+              <MenuItem value="Available" sx={{ fontFamily: "'Poppins', sans-serif'" }}>
+                Available
+              </MenuItem>
+              <MenuItem value="En Route" sx={{ fontFamily: "'Poppins', sans-serif'" }}>
+                En Route
+              </MenuItem>
               <MenuItem value="Busy" sx={{ fontFamily: "'Poppins', sans-serif'" }}>Busy</MenuItem>
             </Select>
           </FormControl>
@@ -464,42 +570,38 @@ const DriverDashboard = () => {
 
         {/* Status Message */}
         {message && (
-          <Paper
-            elevation={2}
-            sx={{
-              p: 2,
-              mb: 4,
-              bgcolor: message.includes("success") || message.includes("completed") ? "#E8F5E9" : "#FFEBEE",
-              borderRadius: 2,
-            }}
-          >
+          <Box sx={{ mb: 4 }}>
             <Typography
               sx={{
-                color: message.includes("success") || message.includes("completed") ? "#00695C" : "#D32F2F",
+                p: 2,
+                bgcolor:
+                  message.includes("success") || message.includes("completed")
+                    ? "#E8F5E9"
+                    : "#FFEBEE",
+                color:
+                  message.includes("success") || message.includes("completed")
+                    ? "#00695C"
+                    : "#D32F2F",
                 textAlign: "center",
-                fontFamily: "'Poppins', sans-serif'",
+                borderRadius: 2,
+                fontFamily: "'Poppins', sans-serif",
               }}
             >
               {message}
             </Typography>
-          </Paper>
+          </Box>
         )}
 
         {/* Map Section */}
-        <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 3 }}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 2,
-            }}
-          >
+        <Box sx={{ mb: 4 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
             <Typography
               variant="h5"
-              fontWeight="bold"
-              color="#00695C"
-              sx={{ fontFamily: "'Poppins', sans-serif'" }}
+              sx={{
+                color: "#00695C",
+                fontWeight: 600,
+                fontFamily: "'Poppins', sans-serif",
+              }}
             >
               Live Tracking
             </Typography>
@@ -508,101 +610,103 @@ const DriverDashboard = () => {
               sx={{
                 color: "#D32F2F",
                 "&:hover": { color: "#C62828" },
-                fontFamily: "'Poppins', sans-serif'",
+                fontFamily: "'Poppins', sans-serif",
               }}
             >
               {mapExpanded ? "Collapse" : "Expand"}
             </Button>
           </Box>
           {mapExpanded && (
-            <Box
-              sx={{
-                height: isMobile ? "200px" : "400px",
-                borderRadius: 2,
-                overflow: "hidden",
-              }}
+            <Card
+              sx={{ borderRadius: 2, overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}
             >
-              {latitude && longitude ? (
-                <MapContainer
-                  center={[latitude, longitude]}
-                  zoom={15}
-                  style={{ height: "100%", width: "100%" }}
-                >
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                  <Marker position={[latitude, longitude]} icon={ambulanceIcon}>
-                    <Popup sx={{ fontFamily: "'Poppins', sans-serif'" }}>Your Ambulance</Popup>
-                  </Marker>
-                  {filteredEmergencies.map((emergency) =>
-                    emergency.coordinates ? (
-                      <Marker
-                        key={emergency._id}
-                        position={[emergency.coordinates.latitude, emergency.coordinates.longitude]}
-                        icon={emergencyIcon}
-                      >
-                        <Popup sx={{ fontFamily: "'Poppins', sans-serif'" }}>{emergency.emergency_type}</Popup>
-                      </Marker>
-                    ) : null
-                  )}
-                </MapContainer>
-              ) : (
-                <Box
-                  sx={{
-                    height: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Typography
-                    color="textSecondary"
-                    sx={{ fontFamily: "'Poppins', sans-serif'" }}
+              <Box sx={{ height: isMobile ? "200px" : "400px" }}>
+                {latitude && longitude ? (
+                  <MapContainer
+                    center={[latitude, longitude]}
+                    zoom={15}
+                    style={{ height: "100%", width: "100%" }}
                   >
-                    Waiting for location...
-                  </Typography>
-                </Box>
-              )}
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <Marker position={[latitude, longitude]} icon={ambulanceIcon}>
+                      <Popup sx={{ fontFamily: "'Poppins', sans-serif'" }}>Your Ambulance</Popup>
+                    </Marker>
+                    {filteredEmergencies.map((emergency) =>
+                      emergency.coordinates ? (
+                        <Marker
+                          key={emergency._id}
+                          position={[
+                            emergency.coordinates.latitude,
+                            emergency.coordinates.longitude,
+                          ]}
+                          icon={emergencyIcon}
+                        >
+                          <Popup sx={{ fontFamily: "'Poppins', sans-serif'" }}>
+                            {emergency.emergency_type}
+                          </Popup>
+                        </Marker>
+                      ) : null
+                    )}
+                  </MapContainer>
+                ) : (
+                  <Box
+                    sx={{
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Typography
+                      color="textSecondary"
+                      sx={{ fontFamily: "'Poppins', sans-serif'" }}
+                    >
+                      Waiting for location...
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
               <Typography
                 variant="body2"
                 sx={{
                   mt: 1,
                   color: "#757575",
+                  textAlign: "center",
                   fontFamily: "'Poppins', sans-serif'",
                 }}
               >
                 Tracking: {latitude && longitude ? "Active" : "Inactive"}
               </Typography>
-            </Box>
+            </Card>
           )}
-        </Paper>
+        </Box>
 
         {/* Emergencies Section */}
-        <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 3 }}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 2,
-            }}
-          >
+        <Box sx={{ mb: 4 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
             <Typography
               variant="h5"
-              fontWeight="bold"
-              color="#00695C"
-              sx={{ fontFamily: "'Poppins', sans-serif'" }}
+              sx={{
+                color: "#00695C",
+                fontWeight: 600,
+                fontFamily: "'Poppins', sans-serif",
+              }}
             >
               Assigned Emergencies
             </Typography>
-            <Button
-              onClick={() => setEmergenciesExpanded(!emergenciesExpanded)}
-              sx={{
-                color: "#D32F2F",
-                "&:hover": { color: "#C62828" },
-                fontFamily: "'Poppins', sans-serif'",
-              }}
-            >
-              {emergenciesExpanded ? "Collapse" : "Expand"}
-            </Button>
+            <Tooltip title="Refresh Emergencies">
+              <IconButton
+                onClick={fetchAssignedEmergencies}
+                disabled={loading}
+                sx={{ color: "#D32F2F", "&:hover": { color: "#C62828" } }}
+              >
+                {loading ? (
+                  <CircularProgress size={24} sx={{ color: "#D32F2F" }} />
+                ) : (
+                  <RefreshIcon />
+                )}
+              </IconButton>
+            </Tooltip>
           </Box>
           {emergenciesExpanded && (
             <>
@@ -613,9 +717,7 @@ const DriverDashboard = () => {
                   fullWidth
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  InputProps={{
-                    style: { fontFamily: "'Poppins', sans-serif'" },
-                  }}
+                  InputProps={{ style: { fontFamily: "'Poppins', sans-serif'" } }}
                 />
                 <FormControl sx={{ minWidth: 120 }}>
                   <InputLabel sx={{ fontFamily: "'Poppins', sans-serif'" }}>Priority</InputLabel>
@@ -625,23 +727,33 @@ const DriverDashboard = () => {
                     label="Priority"
                     sx={{ fontFamily: "'Poppins', sans-serif'" }}
                   >
-                    <MenuItem value="All" sx={{ fontFamily: "'Poppins', sans-serif'" }}>All</MenuItem>
-                    <MenuItem value="High" sx={{ fontFamily: "'Poppins', sans-serif'" }}>High</MenuItem>
-                    <MenuItem value="Medium" sx={{ fontFamily: "'Poppins', sans-serif'" }}>Medium</MenuItem>
-                    <MenuItem value="Low" sx={{ fontFamily: "'Poppins', sans-serif'" }}>Low</MenuItem>
+                    <MenuItem value="All" sx={{ fontFamily: "'Poppins', sans-serif'" }}>
+                      All
+                    </MenuItem>
+                    <MenuItem value="High" sx={{ fontFamily: "'Poppins', sans-serif'" }}>
+                      High
+                    </MenuItem>
+                    <MenuItem value="Medium" sx={{ fontFamily: "'Poppins', sans-serif'" }}>
+                      Medium
+                    </MenuItem>
+                    <MenuItem value="Low" sx={{ fontFamily: "'Poppins', sans-serif'" }}>
+                      Low
+                    </MenuItem>
                   </Select>
                 </FormControl>
               </Box>
               {loading ? (
                 <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-                  <CircularProgress />
+                  <CircularProgress size={60} sx={{ color: "#D32F2F" }} />
                 </Box>
               ) : filteredEmergencies.length === 0 ? (
                 <Typography
-                  color="textSecondary"
-                  sx={{ textAlign: "center", py: 2, fontFamily: "'Poppins', sans-serif'" }}
+                  variant="h6"
+                  align="center"
+                  color="#757575"
+                  sx={{ py: 4, fontFamily: "'Poppins', sans-serif'" }}
                 >
-                  No assigned emergencies.
+                  No assigned emergencies
                 </Typography>
               ) : isMobile ? (
                 filteredEmergencies.map((emergency) => (
@@ -657,9 +769,9 @@ const DriverDashboard = () => {
                   </Accordion>
                 ))
               ) : (
-                <Grid container spacing={4}>
+                <Grid container spacing={3}>
                   {filteredEmergencies.map((emergency) => (
-                    <Grid item xs={12} md={6} key={emergency._id}>
+                    <Grid item xs={12} sm={6} md={4} key={emergency._id}>
                       <motion.div variants={cardVariants} initial="hidden" animate="visible">
                         <EmergencyCard emergency={emergency} />
                       </motion.div>
@@ -669,7 +781,18 @@ const DriverDashboard = () => {
               )}
             </>
           )}
-        </Paper>
+          <Button
+            onClick={() => setEmergenciesExpanded(!emergenciesExpanded)}
+            sx={{
+              color: "#D32F2F",
+              "&:hover": { color: "#C62828" },
+              fontFamily: "'Poppins', sans-serif'",
+              mt: 2,
+            }}
+          >
+            {emergenciesExpanded ? "Collapse" : "Expand"}
+          </Button>
+        </Box>
 
         {/* Emergency Details Modal */}
         <Modal open={openModal} onClose={handleCloseModal} closeAfterTransition>
@@ -701,7 +824,8 @@ const DriverDashboard = () => {
                 <strong>Priority:</strong> {selectedEmergency?.priority || "Low"}
               </Typography>
               <Typography sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}>
-                <strong>Victim's Name:</strong> {selectedEmergency?.victim_name || "Not provided"}
+                <strong>Victim's Name:</strong>{" "}
+                {selectedEmergency?.victim_name || "Not provided"}
               </Typography>
               <Typography sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}>
                 <strong>Age:</strong> {selectedEmergency?.victim_age || "Not provided"}
@@ -710,10 +834,12 @@ const DriverDashboard = () => {
                 <strong>Sex:</strong> {selectedEmergency?.victim_sex || "Not provided"}
               </Typography>
               <Typography sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}>
-                <strong>Police Case No:</strong> {selectedEmergency?.police_case_no || "Not provided"}
+                <strong>Police Case No:</strong>{" "}
+                {selectedEmergency?.police_case_no || "Not provided"}
               </Typography>
               <Typography sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}>
-                <strong>Description:</strong> {selectedEmergency?.incident_description || "Not provided"}
+                <strong>Description:</strong>{" "}
+                {selectedEmergency?.incident_description || "Not provided"}
               </Typography>
               <Typography sx={{ fontFamily: "'Poppins', sans-serif'", mb: 1 }}>
                 <strong>Notes:</strong> {selectedEmergency?.notes || "N/A"}
@@ -741,11 +867,28 @@ const DriverDashboard = () => {
           open={notification.open}
           autoHideDuration={6000}
           onClose={() => setNotification({ ...notification, open: false })}
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
         >
           <Alert
+            onClose={() => setNotification({ ...notification, open: false })}
             severity={notification.severity}
-            sx={{ width: "100%", fontFamily: "'Poppins', sans-serif'" }}
+            sx={{
+              width: "100%",
+              boxShadow: 3,
+              bgcolor:
+                notification.severity === "error"
+                  ? "#FFEBEE"
+                  : notification.severity === "warning"
+                  ? "#FFF3E0"
+                  : "#E8F5E9",
+              color:
+                notification.severity === "error"
+                  ? "#D32F2F"
+                  : notification.severity === "warning"
+                  ? "#FF9800"
+                  : "#00695C",
+              fontFamily: "'Poppins', sans-serif",
+            }}
           >
             {notification.message}
           </Alert>

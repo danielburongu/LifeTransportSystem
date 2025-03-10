@@ -27,36 +27,46 @@ import {
 import Navbar from "../components/Navbar";
 import { Link } from "react-router-dom";
 
-// A Dynamic Grid Background CSS for the Hero Section
-const heroGridStyles = `
-  .grid-bg {
-    position: absolute;
-    inset: 0;
-    background:rgb(245, 245, 245);
+// Enhanced Hero Section Styles with Glassmorphism and Modern Effects
+const heroStyles = `
+  .hero-section {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
+    background: url('https://images.unsplash.com/photo-1611226680667-22f8777dfd72?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center/cover;
+    padding-top: 64px; /* Adjust for fixed navbar */
   }
-  .grid-bg::before {
-    content: '';
+  .hero-overlay {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle, rgba(255, 0, 0, 0.1) 0%, transparent 70%);
-    animation: pulse 4s infinite;
+    background: linear-gradient(to bottom, rgba(0, 105, 92, 0.7), rgba(0, 0, 0, 0.5));
+    z-index: 1;
   }
-  .grid-bg .grid-cell {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    animation: move 6s infinite linear;
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: white;
+    padding: 2rem;
   }
-  @keyframes pulse {
-    0%, 100% { opacity: 0.5; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.1); }
+  .glass-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   }
-  @keyframes move {
-    0% { transform: translate(0, 0); opacity: 0.3; }
-    50% { opacity: 0.6; }
-    100% { transform: translate(100vw, 100vh); opacity: 0; }
+  .section-divider {
+    width: 80px;
+    height: 4px;
+    background: #EF4444;
+    margin: 1rem auto;
+    border-radius: 2px;
   }
 `;
 
@@ -67,7 +77,7 @@ const Home = () => {
   const [activeFaq, setActiveFaq] = useState(null);
   const sectionRefs = useRef({});
 
-  // An Observer for section visibility
+  // Intersection Observer for Section Visibility
   useEffect(() => {
     const observers = {};
     const sections = [
@@ -115,16 +125,19 @@ const Home = () => {
           icon: faQrcode,
           heading: "Scan QR Code",
           text: "Scan the QR code to access emergency services instantly.",
+          image: "https://images.unsplash.com/photo-1626682561113-d1db402cc866?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         },
         {
           icon: faPhone,
           heading: "Call for Help",
           text: "One-touch call connects you to emergency services.",
+          image: "https://images.unsplash.com/photo-1560957123-81d48b38ab49?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         },
         {
           icon: faHandsHelping,
           heading: "Get Assistance",
-          text: "Trained volunteers arrive within minutes while you wait for emergency services.",
+          text: "Volunteers arrive within minutes while you wait for emergency services.",
+          image: "https://images.unsplash.com/photo-1586470202424-a6f766679b45?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         },
       ],
     },
@@ -136,16 +149,19 @@ const Home = () => {
           icon: faHospital,
           heading: "Medical Transport",
           text: "Swift ambulance services to the nearest appropriate hospital.",
+          image: "https://cdn.pixabay.com/photo/2018/10/09/15/10/rescue-3735206_1280.jpg",
         },
         {
           icon: faCar,
           heading: "Accident Response",
           text: "Rapid aid for traffic and home emergencies with specialized equipment.",
+          image: "https://images.unsplash.com/photo-1584652812805-2192cf80731d?q=80&w=1552&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         },
         {
           icon: faShieldAlt,
           heading: "Police Support",
           text: "24/7 law enforcement assistance with direct dispatch capabilities.",
+          image: "https://images.unsplash.com/photo-1544993570-05e1f210815a?q=80&w=1469&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         },
       ],
     },
@@ -157,16 +173,19 @@ const Home = () => {
           icon: faStar,
           heading: "Verified Responders",
           text: "All professionals are background-checked and certified.",
+          image: "https://plus.unsplash.com/premium_photo-1661351553991-f039d72babe1?q=80&w=1469&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         },
         {
           icon: faHeartbeat,
           heading: "Health Monitoring",
           text: "Vital signs tracking during transport for better preparedness.",
+          image: "https://images.unsplash.com/photo-1513224502586-d1e602410265?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         },
         {
           icon: faMapMarkerAlt,
           heading: "Precise Location",
           text: "GPS pinpointing for faster response even in remote areas.",
+          image: "https://images.unsplash.com/photo-1625217527288-93919c99650a?q=80&w=1412&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         },
       ],
     },
@@ -186,16 +205,16 @@ const Home = () => {
 
   return (
     <div className="flex flex-col min-h-screen relative">
-      <style>{heroGridStyles}</style>
+      <style>{heroStyles}</style>
 
-      {/* Emergency Button */}
+      {/* Emergency Button with Modern Design */}
       <div className="fixed bottom-8 right-8 z-50">
         <motion.button
           className={`w-16 h-16 md:w-20 md:h-20 rounded-full shadow-lg flex items-center justify-center text-white font-bold ${
             isEmergencyActive ? "bg-yellow-500" : "bg-red-600"
-          }`}
+          } backdrop-blur-md border border-white/20 transition-all duration-300`}
           onClick={handleEmergencyToggle}
-          whileHover={{ scale: 1.1 }}
+          whileHover={{ scale: 1.1, boxShadow: "0 0 20px rgba(239, 68, 68, 0.5)" }}
           whileTap={{ scale: 0.9 }}
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -205,16 +224,16 @@ const Home = () => {
         </motion.button>
       </div>
 
-      {/* Emergency Panel */}
+      {/* Emergency Panel with Glassmorphism */}
       {isEmergencyActive && (
         <motion.div
-          className="fixed inset-0 bg-black bg-opacity-70 z-40 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/80 z-40 flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="bg-white rounded-xl p-6 max-w-md w-full"
+            className="glass-card max-w-md w-full"
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.9, y: 20 }}
@@ -222,44 +241,44 @@ const Home = () => {
             <div className="text-center mb-4">
               <FontAwesomeIcon
                 icon={faExclamationTriangle}
-                className="text-red-600 text-5xl mb-2"
+                className="text-red-500 text-5xl mb-2"
               />
-              <h2 className="text-2xl font-bold text-red-600">
+              <h2 className="text-2xl font-bold text-white">
                 Emergency Services
               </h2>
             </div>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <Link to="/register">
-                <button className="bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-lg flex flex-col items-center justify-center w-full">
+                <button className="bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-lg flex flex-col items-center justify-center w-full transition-all duration-300">
                   <FontAwesomeIcon icon={faAmbulance} className="text-2xl mb-1" />
                   <span>Ambulance</span>
                 </button>
               </Link>
               <Link to="/login">
-                <button className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg flex flex-col items-center justify-center w-full">
+                <button className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg flex flex-col items-center justify-center w-full transition-all duration-300">
                   <FontAwesomeIcon icon={faShieldAlt} className="text-2xl mb-1" />
                   <span>Police</span>
                 </button>
               </Link>
               <Link to="/register">
-                <button className="bg-orange-600 hover:bg-orange-700 text-white py-3 px-4 rounded-lg flex flex-col items-center justify-center w-full">
+                <button className="bg-orange-600 hover:bg-orange-700 text-white py-3 px-4 rounded-lg flex flex-col items-center justify-center w-full transition-all duration-300">
                   <FontAwesomeIcon icon={faMedkit} className="text-2xl mb-1" />
                   <span>First Aid</span>
                 </button>
               </Link>
               <Link to="/login">
-                <button className="bg-teal-600 hover:bg-teal-700 text-white py-3 px-4 rounded-lg flex flex-col items-center justify-center w-full">
+                <button className="bg-teal-600 hover:bg-teal-700 text-white py-3 px-4 rounded-lg flex flex-col items-center justify-center w-full transition-all duration-300">
                   <FontAwesomeIcon icon={faPhone} className="text-2xl mb-1" />
                   <span>Call Help</span>
                 </button>
               </Link>
             </div>
-            <p className="text-gray-600 text-sm text-center mb-4">
+            <p className="text-gray-300 text-sm text-center mb-4">
               Tap an option above to initiate emergency services. Your location
               is being shared automatically.
             </p>
             <button
-              className="w-full bg-gray-200 hover:bg-gray-300 py-2 rounded-lg"
+              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg transition-all duration-300"
               onClick={handleEmergencyToggle}
             >
               Cancel
@@ -274,195 +293,201 @@ const Home = () => {
       {/* Main Content with Full-Page Sections */}
       <div className="flex-1 snap-y snap-mandatory overflow-y-auto">
         {/* Hero Section */}
-        <div
+        <section
           ref={(el) => (sectionRefs.current.hero = el)}
-          className="min-h-screen w-full flex items-center justify-center relative snap-start pt-16"
+          className="hero-section snap-start"
         >
-          {/* Dynamic Grid Background */}
-          <div className="grid-bg">
-            {[...Array(20)].map((_, i) => (
-              <div
-                key={i}
-                className="grid-cell"
-                style={{
-                  left: `${Math.random() * 100}vw`,
-                  top: `${Math.random() * 100}vh`,
-                  animationDelay: `${Math.random() * 5}s`,
-                }}
-              />
-            ))}
-          </div>
-
-          <div className="container mx-auto px-6 text-center relative z-10">
-            {/* Main Heading */}
+          <div className="hero-overlay"></div>
+          <div className="hero-content">
             <motion.div
               initial={{ opacity: 0, y: -40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
               className="mb-6"
             >
-              <h1 className="text-4xl md:text-5xl font-extrabold leading-tight text-teal-700">
-              Rapid Emergency Response Services
+              <h1 className="text-5xl md:text-7xl font-extrabold leading-tight text-white">
+                Rapid Emergency Response
               </h1>
+              <p className="text-lg md:text-2xl font-light mt-4 text-gray-200">
+                Life-Saving Care, Just a Tap Away
+              </p>
             </motion.div>
 
-            {/* Subtext */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-lg md:text-xl font-light mb-6 text-teal-700 mx-auto"
-            >
-              Get help in emergencies with ease, Precise Coordination and Life-Saving Care
-            </motion.p>
-
-            {/* CTAs */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
               className="flex flex-col sm:flex-row gap-4 justify-center"
             >
-              <Link to="/Qr-login" className="relative group">
-                <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full text-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center gap-2">
-                  <FontAwesomeIcon icon={faQrcode} className="text-xl" />
-                  Scan QR Code
-                </button>
+              <Link to="/Qr-login">
+                <motion.button
+                  className="bg-red-600 hover:bg-red-700 text-white px-8 md:px-10 py-3 md:py-4 rounded-full text-lg md:text-xl font-bold shadow-lg transition-all duration-300"
+                  whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(239, 68, 68, 0.5)" }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FontAwesomeIcon icon={faQrcode} className="mr-2" /> Scan QR
+                </motion.button>
               </Link>
-              <Link to="/register" className="relative group">
-                <button className="bg-teal-700 hover:bg-teal-700 text-white px-8 py-3 rounded-full text-lg font-bold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center gap-2">
-                  <FontAwesomeIcon icon={faRegistered} className="text-xl" />
-                  Sign Up
-                </button>
+              <Link to="/register">
+                <motion.button
+                  className="bg-teal-600 hover:bg-teal-700 text-white px-8 md:px-10 py-3 md:py-4 rounded-full text-lg md:text-xl font-bold shadow-lg transition-all duration-300"
+                  whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(20, 184, 166, 0.5)" }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FontAwesomeIcon icon={faRegistered} className="mr-2" /> Register
+                </motion.button>
               </Link>
             </motion.div>
 
-            {/* Emergency Stats */}
+            {/* Emergency Stats with Glassmorphism */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.8 }}
-              className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto"
+              className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto"
             >
-              <div className="text-teal-700">
+              <div className="glass-card text-center">
                 <FontAwesomeIcon
                   icon={faAmbulance}
-                  className="text-red-500 text-2xl mb-2"
+                  className="text-red-400 text-3xl mb-2"
                 />
-                <p className="text-xl font-bold">{responseStats.dispatches}+</p>
-                <p className="text-sm">Units Dispatched</p>
+                <p className="text-2xl font-bold">{responseStats.dispatches}+</p>
+                <p className="text-sm text-gray-200">Units Dispatched</p>
               </div>
-              <div className="text-teal-700">
+              <div className="glass-card text-center">
                 <FontAwesomeIcon
                   icon={faStopwatch}
-                  className="text-red-500 text-2xl mb-2"
+                  className="text-red-400 text-3xl mb-2"
                 />
-                <p className="text-xl font-bold">2.5 min</p>
-                <p className="text-sm">Avg. Response Time</p>
+                <p className="text-2xl font-bold">2.5 min</p>
+                <p className="text-sm text-gray-200">Avg. Response Time</p>
               </div>
-              <div className="text-teal-700">
+              <div className="glass-card text-center">
                 <FontAwesomeIcon
                   icon={faMapMarkerAlt}
-                  className="text-red-500 text-2xl mb-2"
+                  className="text-red-400 text-3xl mb-2"
                 />
-                <p className="text-xl font-bold">99%</p>
-                <p className="text-sm">Coverage Accuracy</p>
+                <p className="text-2xl font-bold">99%</p>
+                <p className="text-sm text-gray-200">Coverage Accuracy</p>
               </div>
             </motion.div>
+
+            {/* Scroll Down Indicator */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1 }}
+              className="absolute bottom-10"
+            >
+              <button
+                onClick={() => navigateToSection("howItWorks")}
+                className="text-white text-xl animate-bounce"
+              >
+                <FontAwesomeIcon icon={faArrowDown} />
+              </button>
+            </motion.div>
           </div>
-        </div>
+        </section>
 
         {/* How It Works Section */}
-        <div
+        <section
           ref={(el) => (sectionRefs.current.howItWorks = el)}
-          className="min-h-screen w-full bg-gray-100 flex items-center justify-center snap-start py-16"
+          className="min-h-screen w-full bg-gray-50 flex items-center justify-center snap-start py-16"
         >
           <div className="container mx-auto px-6">
-            <div className="text-center mb-12">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-teal-700">
-                  {sections[0].title}
-                </h2>
-                <div className="w-24 h-1 bg-red-600 mx-auto"></div>
-                <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-                  Our streamlined process ensures you get help when you need it
-                  most, with just a few simple steps.
-                </p>
-              </motion.div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold text-teal-800">
+                {sections[0].title}
+              </h2>
+              <div className="section-divider"></div>
+              <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+                Our streamlined process ensures you get help when you need it most.
+              </p>
+            </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-              {sections[0].steps.map(({ icon, heading, text }, idx) => (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {sections[0].steps.map(({ icon, heading, text, image }, idx) => (
                 <motion.div
                   key={idx}
-                  className="flex flex-col items-center bg-white p-8 rounded-2xl shadow-lg border-t-4 border-teal-500"
+                  className="relative group rounded-2xl overflow-hidden shadow-lg"
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: idx * 0.2 }}
                   viewport={{ once: true }}
+                  whileHover={{ scale: 1.03 }}
                 >
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 bg-teal-50 border-2 border-teal-500">
-                    <FontAwesomeIcon icon={icon} className="text-red-600 text-3xl" />
+                  <img
+                    src={image}
+                    alt={heading}
+                    className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                  <div className="relative p-6 text-center text-white">
+                    <div className="w-16 h-16 rounded-full bg-teal-600 flex items-center justify-center mx-auto mb-4">
+                      <FontAwesomeIcon icon={icon} className="text-white text-2xl" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">{heading}</h3>
+                    <p className="text-gray-200">{text}</p>
                   </div>
-                  <h3 className="text-2xl font-bold mb-3 text-teal-700">{heading}</h3>
-                  <div className="w-12 h-1 bg-red-600 mb-4"></div>
-                  <p className="text-gray-600 text-center">{text}</p>
                 </motion.div>
               ))}
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Our Services Section */}
-        <div
+        <section
           ref={(el) => (sectionRefs.current.services = el)}
-          className="min-h-screen w-full bg-gradient-to-b from-gray-200 to-gray-100 flex items-center justify-center snap-start py-16"
+          className="min-h-screen w-full bg-gradient-to-b from-gray-100 to-gray-200 flex items-center justify-center snap-start py-16"
         >
           <div className="container mx-auto px-6">
-            <div className="text-center mb-12">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-teal-700">
-                  {sections[1].title}
-                </h2>
-                <div className="w-24 h-1 bg-red-600 mx-auto"></div>
-                <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-                  We provide comprehensive emergency services to handle any
-                  situation with speed and care.
-                </p>
-              </motion.div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold text-teal-800">
+                {sections[1].title}
+              </h2>
+              <div className="section-divider"></div>
+              <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+                Comprehensive emergency services tailored to your needs.
+              </p>
+            </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {sections[1].steps.map(({ icon, heading, text }, idx) => (
+              {sections[1].steps.map(({ icon, heading, text, image }, idx) => (
                 <motion.div
                   key={idx}
-                  className="group relative overflow-hidden"
+                  className="group relative rounded-2xl overflow-hidden shadow-lg"
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: idx * 0.2 }}
                   viewport={{ once: true }}
-                  whileHover={{ y: -5 }}
+                  whileHover={{ scale: 1.03 }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-b from-teal-700 to-teal-900 rounded-2xl transform transition-all duration-300 group-hover:scale-95"></div>
-                  <div className="relative p-8 flex flex-col items-center text-white z-10">
-                    <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 bg-white">
-                      <FontAwesomeIcon icon={icon} className="text-red-600 text-3xl" />
+                  <img
+                    src={image}
+                    alt={heading}
+                    className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-teal-800/80 to-transparent"></div>
+                  <div className="relative p-6 text-center text-white">
+                    <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-4">
+                      <FontAwesomeIcon icon={icon} className="text-red-600 text-2xl" />
                     </div>
-                    <h3 className="text-2xl font-bold mb-3">{heading}</h3>
-                    <div className="w-12 h-1 bg-red-600 mb-4"></div>
-                    <p className="text-center text-gray-100">{text}</p>
+                    <h3 className="text-xl font-bold mb-2">{heading}</h3>
+                    <p className="text-gray-200 mb-4">{text}</p>
                     <Link to="/services">
-                      <button className="mt-6 bg-white text-teal-700 px-4 py-2 rounded-full font-medium hover:bg-red-600 hover:text-white transition-all duration-300">
+                      <button className="bg-white text-teal-800 px-4 py-2 rounded-full font-medium hover:bg-red-600 hover:text-white transition-all duration-300">
                         Learn More
                       </button>
                     </Link>
@@ -471,53 +496,55 @@ const Home = () => {
               ))}
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Key Features Section */}
-        <div
+        <section
           ref={(el) => (sectionRefs.current.features = el)}
-          className="min-h-screen w-full bg-gray-100 flex items-center justify-center snap-start py-16"
+          className="min-h-screen w-full bg-gray-50 flex items-center justify-center snap-start py-16"
         >
           <div className="container mx-auto px-6">
-            <div className="text-center mb-12">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-teal-700">
-                  {sections[2].title}
-                </h2>
-                <div className="w-24 h-1 bg-red-600 mx-auto"></div>
-                <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-                  Our platform is built with advanced features designed to save
-                  lives and provide peace of mind.
-                </p>
-              </motion.div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold text-teal-800">
+                {sections[2].title}
+              </h2>
+              <div className="section-divider"></div>
+              <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+                Advanced features designed to save lives and provide peace of mind.
+              </p>
+            </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {sections[2].steps.map(({ icon, heading, text }, idx) => (
+              {sections[2].steps.map(({ icon, heading, text, image }, idx) => (
                 <motion.div
                   key={idx}
-                  className="flex flex-col items-center"
+                  className="group relative rounded-2xl overflow-hidden shadow-lg"
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: idx * 0.2 }}
                   viewport={{ once: true }}
+                  whileHover={{ scale: 1.03 }}
                 >
-                  <div className="relative w-full mb-6">
-                    <div className="absolute inset-0 bg-teal-700 opacity-10 rounded-xl transform rotate-3"></div>
-                    <div className="relative bg-white p-6 rounded-xl shadow-md border-l-4 border-red-600">
-                      <div className="flex items-center mb-4">
-                        <div className="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center mr-4">
-                          <FontAwesomeIcon icon={icon} className="text-red-600 text-xl" />
-                        </div>
-                        <h3 className="text-xl font-bold text-teal-700">{heading}</h3>
+                  <img
+                    src={image}
+                    alt={heading}
+                    className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                  <div className="relative p-6">
+                    <div className="flex items-center mb-4">
+                      <div className="w-12 h-12 rounded-full bg-teal-600 flex items-center justify-center mr-4">
+                        <FontAwesomeIcon icon={icon} className="text-white text-xl" />
                       </div>
-                      <p className="text-gray-600">{text}</p>
+                      <h3 className="text-xl font-bold text-white">{heading}</h3>
                     </div>
+                    <p className="text-gray-200">{text}</p>
                   </div>
                 </motion.div>
               ))}
@@ -530,88 +557,94 @@ const Home = () => {
               transition={{ duration: 0.5, delay: 0.6 }}
               viewport={{ once: true }}
             >
-              <button className="bg-teal-700 hover:bg-teal-800 text-white px-8 py-3 rounded-full text-lg font-bold transition-all duration-300 shadow-lg">
-                View All Features
-              </button>
+              <Link to="/services">
+                <button className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-full text-lg font-bold transition-all duration-300 shadow-lg">
+                  Explore All Features
+                </button>
+              </Link>
             </motion.div>
           </div>
-        </div>
+        </section>
 
         {/* Recent Responses Section */}
-        <div
+        <section
           ref={(el) => (sectionRefs.current.responses = el)}
-          className="min-h-screen w-full bg-gradient-to-b from-gray-200 to-gray-100 flex items-center justify-center snap-start py-16"
+          className="min-h-screen w-full bg-gradient-to-b from-gray-200 to-gray-300 flex items-center justify-center snap-start py-16"
         >
           <div className="container mx-auto px-6">
-            <div className="text-center mb-12">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-teal-700">
-                  Recent Responses
-                </h2>
-                <div className="w-24 h-1 bg-red-600 mx-auto"></div>
-                <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-                  Our impact by the numbers, showing how we're making a
-                  difference every day.
-                </p>
-              </motion.div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold text-teal-800">
+                Recent Responses
+              </h2>
+              <div className="section-divider"></div>
+              <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+                Our impact in numbers, showcasing our commitment to saving lives.
+              </p>
+            </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 {
-                  icon: faPhone,
+                
                   label: "Emergency Calls",
                   value: responseStats.calls,
                   desc: "Handled last week",
                   color: "from-red-500 to-red-700",
+                  image: "https://images.unsplash.com/photo-1532106753298-e7b431b26dae?q=80&w=1571&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                 },
                 {
-                  icon: faHandsHelping,
+                  
                   label: "Assistance Provided",
                   value: responseStats.assists,
                   desc: "Support given",
                   color: "from-teal-500 to-teal-700",
+                  image: "https://images.unsplash.com/photo-1544026230-488aeae72c0d?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                 },
                 {
-                  icon: faAmbulance,
+                  
                   label: "Units Dispatched",
                   value: responseStats.dispatches,
                   desc: "Rapid response",
                   color: "from-blue-500 to-blue-700",
+                  image: "https://images.unsplash.com/photo-1580795479225-c50ab8c3348d?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                 },
               ].map((stat, index) => (
                 <motion.div
                   key={index}
-                  className="group relative"
+                  className="group relative rounded-2xl overflow-hidden shadow-lg"
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, delay: index * 0.2 }}
                   viewport={{ once: true }}
-                  whileHover={{ y: -5 }}
+                  whileHover={{ scale: 1.03 }}
                 >
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-r ${stat.color} rounded-2xl transform transition-all duration-300 group-hover:scale-95`}
-                  ></div>
-                  <div className="relative p-8 rounded-2xl flex flex-col items-center z-10 text-white">
+                  <img
+                    src={stat.image}
+                    alt={stat.label}
+                    className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                  <div className="relative p-8 rounded-2xl flex flex-col items-center text-white z-10">
                     <FontAwesomeIcon
                       icon={stat.icon}
-                      className="text-white text-4xl mb-4 opacity-90"
+                      className="text-white text-4xl mb-4"
                     />
                     <div className="text-5xl font-bold mb-2">{stat.value}+</div>
                     <h3 className="text-xl font-bold mb-2">{stat.label}</h3>
-                    <p className="text-center text-gray-100 opacity-90">{stat.desc}</p>
+                    <p className="text-center text-gray-200">{stat.desc}</p>
                   </div>
                 </motion.div>
               ))}
             </div>
 
             <motion.div
-              className="mt-12 bg-white p-6 rounded-xl shadow-lg"
+              className="mt-12 glass-card"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.6 }}
@@ -625,11 +658,11 @@ const Home = () => {
                   { icon: faCalendarCheck, value: "24/7", label: "Service Availability" },
                 ].map((item, idx) => (
                   <div key={idx} className="flex items-center p-2">
-                    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mr-4">
-                      <FontAwesomeIcon icon={item.icon} className="text-teal-700 text-xl" />
+                    <div className="w-12 h-12 rounded-full bg-teal-600/20 flex items-center justify-center mr-4">
+                      <FontAwesomeIcon icon={item.icon} className="text-teal-600 text-xl" />
                     </div>
                     <div>
-                      <div className="text-xl font-bold text-teal-700">{item.value}</div>
+                      <div className="text-xl font-bold text-teal-800">{item.value}</div>
                       <div className="text-sm text-gray-600">{item.label}</div>
                     </div>
                   </div>
@@ -637,66 +670,64 @@ const Home = () => {
               </div>
             </motion.div>
           </div>
-        </div>
+        </section>
 
         {/* Testimonials Section */}
-        <div
+        <section
           ref={(el) => (sectionRefs.current.testimonials = el)}
-          className="min-h-screen w-full bg-gray-100 flex items-center justify-center snap-start py-16"
+          className="min-h-screen w-full bg-gray-50 flex items-center justify-center snap-start py-16"
         >
           <div className="container mx-auto px-6">
-            <div className="text-center mb-12">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-teal-700">
-                  What People Say
-                </h2>
-                <div className="w-24 h-1 bg-red-600 mx-auto"></div>
-                <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-                  Real stories from people whose lives have been impacted by
-                  our services.
-                </p>
-              </motion.div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold text-teal-800">
+                What People Say
+              </h2>
+              <div className="section-divider"></div>
+              <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+                Hear from those whose lives have been touched by our services.
+              </p>
+            </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 {
                   name: "Jacob S.",
-                  text: "This app saved my life. I had a medical emergency while hiking, and the rapid response team arrived in just minutes. The GPS location feature was critical in finding me.",
+                  text: "This app saved my life. I had a medical emergency while hiking, and the rapid response team arrived in just minutes.",
                   rating: 5,
                   role: "Patient",
+                  image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
                 },
                 {
                   name: "Emma W.",
-                  text: "As hospital staff, I've seen firsthand how this platform has streamlined our workflow. Patients arrive faster and with better pre-arrival information, allowing us to prepare effectively.",
+                  text: "As hospital staff, this platform has streamlined our workflow. Patients arrive faster with better pre-arrival info.",
                   rating: 5,
                   role: "Hospital Staff",
+                  image: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
                 },
                 {
                   name: "David K.",
-                  text: "The real-time updates make my job as an ambulance driver much more efficient. I can see patient information en route and coordinate with hospital staff before arrival.",
+                  text: "Real-time updates make my job as an ambulance driver efficient. I can coordinate with hospital staff en route.",
                   rating: 5,
                   role: "Ambulance Driver",
+                  image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
                 },
               ].map((testimonial, index) => (
                 <motion.div
                   key={index}
-                  className="bg-white p-8 rounded-2xl shadow-lg relative"
+                  className="glass-card relative p-6"
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.2 }}
                   viewport={{ once: true }}
                   whileHover={{ y: -5 }}
                 >
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-red-600 rounded-bl-2xl rounded-tr-2xl flex items-center justify-center">
-                    <FontAwesomeIcon icon={faUser} className="text-white text-xl" />
-                  </div>
-                  <div className="flex justify-start mb-4">
+                  <div className="flex justify-center mb-4">
                     {[...Array(5)].map((_, i) => (
                       <FontAwesomeIcon
                         key={i}
@@ -707,15 +738,15 @@ const Home = () => {
                       />
                     ))}
                   </div>
-                  <p className="text-gray-700 mb-6 italic">"{testimonial.text}"</p>
+                  <p className="text-gray-600 mb-6 italic">"{testimonial.text}"</p>
                   <div className="flex items-center">
-                    <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center mr-4">
-                      <span className="text-teal-700 font-bold">
-                        {testimonial.name.charAt(0)}
-                      </span>
-                    </div>
+                    <img
+                      src={testimonial.image}
+                      alt={testimonial.name}
+                      className="w-12 h-12 rounded-full mr-4 object-cover"
+                    />
                     <div>
-                      <h4 className="font-bold text-lg text-teal-700">{testimonial.name}</h4>
+                      <h4 className="font-light text-lg text-gray-600">{testimonial.name}</h4>
                       <p className="text-gray-600">{testimonial.role}</p>
                     </div>
                   </div>
@@ -723,37 +754,36 @@ const Home = () => {
               ))}
             </div>
           </div>
-        </div>
+        </section>
 
         {/* FAQ Section */}
-        <div
+        <section
           ref={(el) => (sectionRefs.current.faq = el)}
-          className="min-h-screen w-full bg-gradient-to-b from-gray-200 to-gray-100 flex items-center justify-center snap-start py-16"
+          className="min-h-screen w-full bg-gradient-to-b from-gray-200 to-gray-300 flex items-center justify-center snap-start py-16"
         >
           <div className="container mx-auto px-6">
-            <div className="text-center mb-12">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-teal-700">
-                  Frequently Asked Questions
-                </h2>
-                <div className="w-24 h-1 bg-red-600 mx-auto"></div>
-                <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-                  Find answers to the most common questions about our services.
-                </p>
-              </motion.div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold text-teal-800">
+                Frequently Asked Questions
+              </h2>
+              <div className="section-divider"></div>
+              <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+                Find answers to the most common questions about our services.
+              </p>
+            </motion.div>
 
-            <div className="space-y-4">
+            <div className="text-gray-400 space-y-4 max-w-3xl mx-auto">
               {[
                 {
                   question: "How do I use the emergency services?",
                   answer:
-                    "Simply press the SOS button and select the type of emergency service you need. Your location will be shared automatically.",
+                    "Simply press the SOS button and select the type of emergency service you need. Your location will be shared instantly on click.",
                 },
                 {
                   question: "Is the service available 24/7?",
@@ -763,12 +793,12 @@ const Home = () => {
                 {
                   question: "How accurate is the location tracking?",
                   answer:
-                    "Our platform uses advanced GPS technology to provide precise location tracking, even in remote areas.",
+                    "Our platform uses advanced GPS technology to provide precise location tracking, in all areas.",
                 },
               ].map((faq, index) => (
                 <motion.div
                   key={index}
-                  className="bg-white p-6 rounded-xl shadow-lg"
+                  className="glass-card p-6"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.2 }}
@@ -778,84 +808,102 @@ const Home = () => {
                     className="flex justify-between items-center cursor-pointer"
                     onClick={() => toggleFaq(index)}
                   >
-                    <h3 className="text-lg font-bold text-teal-700">{faq.question}</h3>
+                    <h3 className="text-lg font-bold text-gray">{faq.question}</h3>
                     <FontAwesomeIcon
                       icon={activeFaq === index ? faChevronUp : faChevronDown}
-                      className="text-teal-700"
+                      className="text-gray"
                     />
                   </div>
                   {activeFaq === index && (
-                    <div className="mt-4 text-gray-600">
+                    <div className="mt-4 text-gray-400">
                       <p>{faq.answer}</p>
                     </div>
                   )}
                 </motion.div>
               ))}
             </div>
+
+            <motion.div
+              className="mt-12 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <Link to="/contact">
+                <button className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-full text-lg font-bold transition-all duration-300 shadow-lg">
+                  Still Have Questions? Contact Us
+                </button>
+              </Link>
+            </motion.div>
           </div>
-        </div>
+        </section>
 
         {/* Dispatch Network Section */}
-        <div
+        <section
           ref={(el) => (sectionRefs.current.network = el)}
-          className="min-h-screen w-full bg-gradient-to-b from-gray-200 to-gray-100 flex items-center justify-center snap-start py-16"
+          className="min-h-screen w-full bg-gradient-to-b from-gray-200 to-gray-300 flex items-center justify-center snap-start py-16"
         >
           <div className="container mx-auto px-6">
-            <div className="text-center mb-12">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-teal-700">
-                  Dispatch Network
-                </h2>
-                <div className="w-24 h-1 bg-red-600 mx-auto"></div>
-                <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-                  Our extensive network ensures rapid response across multiple
-                  regions, 24/7.
-                </p>
-              </motion.div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold text-teal-800">
+                Dispatch Network
+              </h2>
+              <div className="section-divider"></div>
+              <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+                Our extensive network ensures rapid response across multiple regions, 24/7.
+              </p>
+            </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 {
-                  icon: faCar,
+                  
                   value: "250+",
                   title: "Active Responders",
                   color: "from-red-500 to-red-700",
+                  image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8bWVkaWNhbHxlbnwwfHwwfHx8MA%3D%3D",
                 },
                 {
-                  icon: faAmbulance,
+                  
                   value: "< 2 min",
                   title: "Dispatch Time",
                   color: "from-teal-500 to-teal-700",
+                  image: "https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fHRpbWV8ZW58MHx8MHx8fDA%3D",
                 },
                 {
-                  icon: faShieldAlt,
+                  
                   value: "15+",
                   title: "Coverage Areas",
                   color: "from-blue-500 to-blue-700",
+                  image: "https://plus.unsplash.com/premium_photo-1712225701666-7c97f05ae631?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8Q292ZXJhZ2UlMjBBcmVhcyUyMGFmcmljYXxlbnwwfHwwfHx8MA%3D%3D",
                 },
               ].map((item, index) => (
                 <motion.div
                   key={index}
-                  className="group relative"
+                  className="group relative rounded-2xl overflow-hidden shadow-lg"
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, delay: index * 0.2 }}
                   viewport={{ once: true }}
-                  whileHover={{ y: -5 }}
+                  whileHover={{ scale: 1.03 }}
                 >
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-r ${item.color} rounded-2xl transform transition-all duration-300 group-hover:scale-95`}
-                  ></div>
-                  <div className="relative p-8 rounded-2xl flex flex-col items-center z-10 text-white">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                  <div className="relative p-8 rounded-2xl flex flex-col items-center text-white z-10">
                     <FontAwesomeIcon
                       icon={item.icon}
-                      className="text-white text-4xl mb-4 opacity-90"
+                      className="text-white text-4xl mb-4"
                     />
                     <div className="text-3xl font-bold mb-2">{item.value}</div>
                     <h3 className="text-xl font-bold">{item.title}</h3>
@@ -863,8 +911,22 @@ const Home = () => {
                 </motion.div>
               ))}
             </div>
+
+            <motion.div
+              className="mt-12 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <Link to="/about-us">
+                <button className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-full text-lg font-bold transition-all duration-300 shadow-lg">
+                  Learn More About Our Network
+                </button>
+              </Link>
+            </motion.div>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );

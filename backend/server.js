@@ -75,9 +75,62 @@ app.use("/api/ambulance", (req, res, next) => {
 io.on("connection", (socket) => {
   console.log(`🔌 New WebSocket connection: ${socket.id}`);
 
+  // Handle location updates (existing event)
   socket.on("updateLocation", (data) => {
     console.log("📍 Received location update:", data);
     io.emit("locationUpdated", data);
+  });
+
+  // Handle driver status updates
+  socket.on("driver_status_update", async ({ userId, status }) => {
+    try {
+      console.log(`📡 Driver ${userId} updated status to: ${status}`);
+      // Optionally update the driver's status in the database
+      const User = mongoose.model("User"); // Assuming User model is defined
+      await User.findByIdAndUpdate(userId, { driverStatus: status }, { new: true });
+
+      // Broadcast the updated status to all connected clients (e.g., HospitalDashboard)
+      io.emit("driver_status_updated", { userId, status });
+    } catch (error) {
+      console.error("❌ Error handling driver status update:", error.message);
+    }
+  });
+
+  // Handle existing emergency-related events (already implemented in emergencyRoutes)
+  socket.on("new_accident_report", (data) => {
+    console.log("📡 Broadcasting new accident report:", data);
+    io.emit("new_accident_report", data);
+  });
+
+  socket.on("accident_verified", (data) => {
+    console.log("📡 Broadcasting accident verified:", data);
+    io.emit("accident_verified", data);
+  });
+
+  socket.on("ambulance_dispatched", (data) => {
+    console.log("📡 Broadcasting ambulance dispatched:", data);
+    io.emit("ambulance_dispatched", data);
+  });
+
+  socket.on("patient_arrived", (data) => {
+    console.log("📡 Broadcasting patient arrived:", data);
+    io.emit("patient_arrived", data);
+  });
+
+  socket.on("new_verified_emergency", (data) => {
+    console.log("📡 Broadcasting new verified emergency:", data);
+    io.emit("new_verified_emergency", data);
+  });
+
+  socket.on("emergency_completed", (data) => {
+    console.log("📡 Broadcasting emergency completed:", data);
+    io.emit("emergency_completed", data);
+  });
+
+  // Handle ambulance location updates
+  socket.on("ambulance_location_update", (data) => {
+    console.log("📍 Received ambulance location update:", data);
+    io.emit("ambulance_location_updated", data);
   });
 
   socket.on("disconnect", () => {

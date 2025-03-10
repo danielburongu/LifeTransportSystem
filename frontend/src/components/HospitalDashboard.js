@@ -65,6 +65,7 @@ const HospitalDashboard = () => {
     fetchEmergencies();
     fetchAvailableAmbulances();
 
+    // Existing Socket.IO listeners
     socket.on("new_verified_emergency", (newEmergency) => {
       console.log("🚨 New Verified Emergency Received:", newEmergency);
       setEmergencyRequests((prev) => [...prev, newEmergency]);
@@ -101,12 +102,28 @@ const HospitalDashboard = () => {
       setOpenSnackbar(true);
     });
 
+    // New listener for driver status updates
+    socket.on("driver_status_updated", ({ userId, status }) => {
+      console.log(`🚑 Driver ${userId} updated status to: ${status}`);
+      setAvailableAmbulances((prev) =>
+        prev.map((ambulance) =>
+          ambulance.driver_id._id === userId
+            ? { ...ambulance, status: status || "Available" } // Default to "Available" if status is missing
+            : ambulance
+        )
+      );
+      setMessage(`🚑 Driver ${userId.slice(-6)} updated status to ${status}`);
+      setOpenSnackbar(true);
+    });
+
+    // Cleanup listeners
     return () => {
       console.log("🔴 Unmounting Hospital Dashboard. Removing listeners...");
       socket.off("new_verified_emergency");
       socket.off("ambulance_dispatched");
       socket.off("patient_arrived");
       socket.off("emergency_completed");
+      socket.off("driver_status_updated");
     };
   }, []);
 
@@ -164,7 +181,12 @@ const HospitalDashboard = () => {
       console.log("📥 Available Ambulances:", data);
 
       if (res.ok) {
-        setAvailableAmbulances(data);
+        // Ensure each ambulance has a status field (default to "Available" if missing)
+        const ambulancesWithStatus = data.map((ambulance) => ({
+          ...ambulance,
+          status: ambulance.status || "Available",
+        }));
+        setAvailableAmbulances(ambulancesWithStatus);
         if (data.length === 0) {
           setMessage("⚠ No available ambulance drivers.");
           setOpenSnackbar(true);
@@ -456,7 +478,8 @@ const HospitalDashboard = () => {
                               value={ambulance.driver_id._id}
                               sx={{ fontFamily: "'Poppins', sans-serif'" }}
                             >
-                              {ambulance.driver_id.username || ambulance.driver_id._id.slice(-6)}
+                              {ambulance.driver_id.username || ambulance.driver_id._id.slice(-6)} (
+                              {ambulance.status || "Available"})
                             </MenuItem>
                           ))
                         )}
