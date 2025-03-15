@@ -306,7 +306,7 @@ const Home = () => {
               className="mb-6"
             >
               <h1 className="text-5xl md:text-7xl font-extrabold leading-tight text-white">
-                Rapid Emergency Response
+              Quick Emergency Response
               </h1>
               <p className="text-lg md:text-2xl font-light mt-4 text-gray-200">
                 Life-Saving Care, Just a Tap Away

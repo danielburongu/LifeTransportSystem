@@ -204,7 +204,7 @@ const Services = () => {
           </h1>
           <div className="section-divider"></div>
           <p className="text-gray-700 text-lg mt-4 max-w-2xl mx-auto">
-            LifeRide: Swift, reliable emergency solutions.
+            Life Transport: Swift, reliable emergency solutions.
           </p>
         </motion.div>
 

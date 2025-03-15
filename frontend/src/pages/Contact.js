@@ -93,7 +93,7 @@ const Contact = () => {
             <h3 className="text-xl font-bold text-teal-800 mb-2">Phone</h3>
             <p className="text-gray-700">
               Emergency: 2300<br />
-              Dispatch: 1-800-LIFE-RIDE
+              Dispatch: 1-800-LIFE-Transport
             </p>
             <a
               href="tel:2300"
@@ -116,14 +116,14 @@ const Contact = () => {
             <h3 className="text-xl font-bold text-teal-800 mb-2">Email</h3>
             <p className="text-gray-700">
               <a
-                href="mailto:support@liferide.com"
+                href="mailto:support@lifetransport.com"
                 className="text-red-600 hover:underline"
               >
-                support@liferide.com
+                support@lifetransport.com
               </a>
             </p>
             <a
-              href="mailto:support@liferide.com"
+              href="mailto:support@lifetransport.com"
               className="inline-block mt-4 bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300"
             >
               Send Email
@@ -142,7 +142,7 @@ const Contact = () => {
             />
             <h3 className="text-xl font-bold text-teal-800 mb-2">Address</h3>
             <p className="text-gray-700">
-              Life-Ride HQ<br />
+              Life-Transport HQ<br />
               123 Kampala Road, City, 45
             </p>
             <a
@@ -168,7 +168,7 @@ const Contact = () => {
               Send Us a Message
             </h2>
             <form
-              action="mailto:support@liferide.com"
+              action="mailto:support@lifeTransport.com"
               method="POST"
               encType="text/plain"
               className="space-y-6"
@@ -250,7 +250,7 @@ const Contact = () => {
               style={{ border: 0 }}
               allowFullScreen=""
               loading="lazy"
-              title="Life-Ride HQ Location"
+              title="Life-Transport HQ Location"
             ></iframe>
           </div>
         </motion.div>
