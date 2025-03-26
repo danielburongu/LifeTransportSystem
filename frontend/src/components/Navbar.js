@@ -84,7 +84,7 @@ const Navbar = () => {
           justifyContent: "space-between",
           alignItems: "center",
           width: "100%",
-          mx: "auto", 
+          mx: "auto",
           px: { xs: 2, sm: 3, md: 6 },
           py: 1,
         }}
@@ -153,7 +153,7 @@ const Navbar = () => {
           }}
         >
           {user ? (
-            <>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Button
                 onClick={handleUserMenuOpen}
                 sx={{
@@ -250,9 +250,9 @@ const Navbar = () => {
                   <LogoutIcon sx={{ mr: 1 }} /> Logout
                 </MenuItem>
               </Menu>
-            </>
+            </Box>
           ) : (
-            <>
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button
                 component={Link}
                 to="/login"
@@ -289,7 +289,7 @@ const Navbar = () => {
               >
                 Register
               </Button>
-            </>
+            </Box>
           )}
         </Box>
 
@@ -334,81 +334,80 @@ const Navbar = () => {
               </MenuItem>
             ))}
             <Box sx={{ borderBottom: "1px solid #FFFFFF", my: 1 }} />
-            {user ? (
-              <>
-                <MenuItem
-                  disabled
-                  sx={{
-                    fontFamily: "'Poppins', sans-serif",
-                    color: "#FFFFFF",
-                    "&.Mui-disabled": { opacity: 0.7 },
-                    py: 1.5,
-                  }}
-                >
-                  <AccountCircleIcon sx={{ mr: 1, color: "#D32F2F" }} />{" "}
-                  {user.name} ({user.role})
-                </MenuItem>
-                {["patient", "police", "hospital_staff", "ambulance_driver"].includes(
-                  user.role
-                ) && (
-                  <MenuItem
-                    component={Link}
-                    to={getDashboardRoute(user.role)}
-                    onClick={() => {
-                      console.log(`Mobile navigating to dashboard: ${getDashboardRoute(user.role)}`);
-                      handleMenuClose();
-                    }}
-                    sx={{
-                      fontFamily: "'Poppins', sans-serif",
-                      color: "#FFFFFF",
-                      "&:hover": { bgcolor: "#FFCA28", color: "#00695C" },
-                      py: 1.5,
-                    }}
-                  >
-                    Dashboard
-                  </MenuItem>
-                )}
-                <MenuItem
-                  onClick={handleLogout}
-                  sx={{
-                    fontFamily: "'Poppins', sans-serif",
-                    color: "#FFFFFF",
-                    "&:hover": { bgcolor: "#FFCA28", color: "#00695C" },
-                    py: 1.5,
-                  }}
-                >
-                  <LogoutIcon sx={{ mr: 1 }} /> Logout
-                </MenuItem>
-              </>
-            ) : (
-              <>
-                <MenuItem
-                  component={Link}
-                  to="/login"
-                  onClick={handleMenuClose}
-                  sx={{
-                    fontFamily: "'Poppins', sans-serif",
-                    color: "#FFFFFF",
-                    "&:hover": { bgcolor: "#FFCA28", color: "#00695C" },
-                    py: 1.5,
-                  }}
-                >
-                  Login
-                </MenuItem>
-                <MenuItem
-                  component={Link}
-                  to="/register"
-                  onClick={handleMenuClose}
-                  sx={{
-                    fontFamily: "'Poppins', sans-serif",
-                    color: "#FFFFFF",
-                    "&:hover": { bgcolor: "#FFCA28", color: "#00695C" },
-                    py: 1.5,
-                  }}
-                >
-                  Register
-                </MenuItem>
-              </>
+            {user && (
+              <MenuItem
+                disabled
+                sx={{
+                  fontFamily: "'Poppins', sans-serif",
+                  color: "#FFFFFF",
+                  "&.Mui-disabled": { opacity: 0.7 },
+                  py: 1.5,
+                }}
+              >
+                <AccountCircleIcon sx={{ mr: 1, color: "#D32F2F" }} />{" "}
+                {user.name} ({user.role})
+              </MenuItem>
+            )}
+            {user && ["patient", "police", "hospital_staff", "ambulance_driver"].includes(user.role) && (
+              <MenuItem
+                component={Link}
+                to={getDashboardRoute(user.role)}
+                onClick={() => {
+                  console.log(`Mobile navigating to dashboard: ${getDashboardRoute(user.role)}`);
+                  handleMenuClose();
+                }}
+                sx={{
+                  fontFamily: "'Poppins', sans-serif",
+                  color: "#FFFFFF",
+                  "&:hover": { bgcolor: "#FFCA28", color: "#00695C" },
+                  py: 1.5,
+                }}
+              >
+                Dashboard
+              </MenuItem>
+            )}
+            {user && (
+              <MenuItem
+                onClick={handleLogout}
+                sx={{
+                  fontFamily: "'Poppins', sans-serif",
+                  color: "#FFFFFF",
+                  "&:hover": { bgcolor: "#FFCA28", color: "#00695C" },
+                  py: 1.5,
+                }}
+              >
+                <LogoutIcon sx={{ mr: 1 }} /> Logout
+              </MenuItem>
+            )}
+            {!user && (
+              <MenuItem
+                component={Link}
+                to="/login"
+                onClick={handleMenuClose}
+                sx={{
+                  fontFamily: "'Poppins', sans-serif",
+                  color: "#FFFFFF",
+                  "&:hover": { bgcolor: "#FFCA28", color: "#00695C" },
+                  py: 1.5,
+                }}
+              >
+                Login
+              </MenuItem>
+            )}
+            {!user && (
+              <MenuItem
+                component={Link}
+                to="/register"
+                onClick={handleMenuClose}
+                sx={{
+                  fontFamily: "'Poppins', sans-serif",
+                  color: "#FFFFFF",
+                  "&:hover": { bgcolor: "#FFCA28", color: "#00695C" },
+                  py: 1.5,
+                }}
+              >
+                Register
+              </MenuItem>
             )}
           </Menu>
         </Box>

@@ -29,12 +29,14 @@ const EmergencyRequestSchema = new mongoose.Schema({
   victim_sex: { type: String, default: "" },
   incident_description: { type: String, required: true },
   police_case_no: { type: String, default: "" },
-  notes: { type: String, default: "" },
+  notes: { type: String, default: "" }, // Already present
   assigned_ambulance: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Ambulance",
     default: null,
   },
+  image: { type: String, default: "" }, // New field to store image file path (optional)
+  verified_by: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null }, // New field to track verifying officer
 }, { timestamps: true });
 
 EmergencyRequestSchema.index({ "coordinates.latitude": 1, "coordinates.longitude": 1 });

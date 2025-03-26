@@ -1,17 +1,51 @@
 const express = require("express");
-const axios = require("axios"); // Added for reverse geocoding
+const axios = require("axios");
+const multer = require("multer");
+const path = require("path");
 const EmergencyRequest = require("../models/EmergencyRequest");
 const User = require("../models/User");
 const { verifyToken, verifyRole } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
+// Set up multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Save files to an 'uploads' folder
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `${uniqueSuffix}-${file.originalname}`);
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // Limit to 5MB
+  fileFilter: (req, file, cb) => {
+    const filetypes = /jpeg|jpg|png/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+    if (extname && mimetype) {
+      return cb(null, true);
+    }
+    cb(new Error("Only JPEG, JPG, and PNG images are allowed"));
+  },
+});
+
+// Ensure the uploads directory exists (optional here; better in server.js)
+const fs = require("fs");
+const uploadDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
 /**
  * @route   POST /api/emergency/guest-request
  * @desc    Create an emergency transport request for guests (unauthenticated)
  * @access  Public
  */
-router.post("/guest-request", async (req, res) => {
+router.post("/guest-request", upload.single("image"), async (req, res) => {
   try {
     const { latitude, longitude, emergency_type } = req.body;
 
@@ -19,6 +53,14 @@ router.post("/guest-request", async (req, res) => {
     if (!latitude || !longitude || !emergency_type) {
       return res.status(400).json({
         message: "❌ Latitude, longitude, and emergency type are required.",
+      });
+    }
+
+    // Validate emergency_type
+    const validEmergencyTypes = ["accident", "burns", "pregnancy", "injury", "medical", "unspecified"];
+    if (!validEmergencyTypes.includes(emergency_type)) {
+      return res.status(400).json({
+        message: "❌ Invalid emergency type. Must be one of: " + validEmergencyTypes.join(", "),
       });
     }
 
@@ -41,8 +83,8 @@ router.post("/guest-request", async (req, res) => {
       location, // Use the geocoded address
       emergency_type,
       coordinates: {
-        latitude,
-        longitude,
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude),
       },
       plus_code: "", // Optional for guests
       victim_name: "Unknown (Guest)", // Placeholder
@@ -52,6 +94,7 @@ router.post("/guest-request", async (req, res) => {
       police_case_no: "",
       status: "pending",
       police_verification: false,
+      image: req.file ? `/uploads/${req.file.filename}` : "", // Store image path if uploaded
     });
 
     await newRequest.save();
@@ -90,17 +133,20 @@ router.get("/guest-request", (req, res) => {
         .error { color: red; }
         .success { color: green; }
         #status { margin-top: 20px; }
+        input[type="file"] { margin: 10px 0; }
       </style>
     </head>
     <body>
       <h1>Request Emergency Help</h1>
       <p>Click the button below to send an emergency request with your location.</p>
+      <input type="file" id="imageInput" accept="image/*" />
       <button id="requestButton" onclick="sendEmergencyRequest()">Send Emergency Request</button>
       <p id="status"></p>
       <script>
         function sendEmergencyRequest() {
           const status = document.getElementById("status");
           const requestButton = document.getElementById("requestButton");
+          const imageInput = document.getElementById("imageInput");
           status.textContent = "Requesting location...";
           status.className = "";
           requestButton.disabled = true;
@@ -115,11 +161,18 @@ router.get("/guest-request", (req, res) => {
           navigator.geolocation.getCurrentPosition(
             async (position) => {
               const { latitude, longitude } = position.coords;
+              const formData = new FormData();
+              formData.append("latitude", latitude);
+              formData.append("longitude", longitude);
+              formData.append("emergency_type", "unspecified");
+              if (imageInput.files[0]) {
+                formData.append("image", imageInput.files[0]);
+              }
+
               try {
                 const response = await fetch(window.location.href, {
                   method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ latitude, longitude, emergency_type: "unspecified" }),
+                  body: formData,
                 });
                 const result = await response.json();
                 if (response.ok) {
@@ -127,6 +180,7 @@ router.get("/guest-request", (req, res) => {
                   status.className = "success";
                   requestButton.textContent = "Send Another Request";
                   requestButton.disabled = false;
+                  imageInput.value = ""; // Clear the file input
                 } else {
                   status.textContent = "❌ " + (result.message || "Failed to process request.");
                   status.className = "error";
@@ -233,10 +287,29 @@ router.get("/pending-accidents", verifyToken, verifyRole(["police"]), async (req
   try {
     console.log("📡 Fetching pending accident reports...");
 
-    const pendingRequests = await EmergencyRequest.find({
-      status: "pending",
-      police_verification: false,
-    }).sort({ createdAt: -1 });
+    const { emergency_type, date, status, priority } = req.query;
+
+    const query = { status: "pending", police_verification: false }; // Default to pending reports
+
+    // Filter by emergency type
+    if (emergency_type) query.emergency_type = emergency_type;
+
+    // Filter by status (if provided, overrides the default "pending")
+    if (status) {
+      query.status = status;
+      // If status is not "pending", we should not enforce police_verification: false
+      if (status !== "pending") delete query.police_verification;
+    }
+
+    // Filter by date (e.g., reports on or after the specified date)
+    if (date) query.createdAt = { $gte: new Date(date) };
+
+    // Filter by priority
+    if (priority) query.priority = priority;
+
+    const pendingRequests = await EmergencyRequest.find(query)
+      .populate("verified_by", "name") // Populate with officer's name instead of username
+      .sort({ createdAt: -1 });
 
     if (!pendingRequests.length) {
       return res.status(404).json({ message: "⚠ No pending accident cases found." });
@@ -283,12 +356,13 @@ router.put("/verify/:requestId", verifyToken, verifyRole(["police"]), async (req
 
     emergency.police_verification = true;
     emergency.status = "verified";
+    emergency.verified_by = req.user.userId; // Set the verifying officer
     await emergency.save();
 
     const io = req.app.get("io");
     if (io) {
-      console.log(`📡 Accident verified: ${requestId}`);
-      io.emit("accident_verified", emergency);
+      console.log(`📡 Accident verified: ${requestId} by officer ${req.user.userId}`);
+      io.emit("accident_verified", { requestId });
       io.emit("new_verified_emergency", emergency);
       io.emit(`patient_update_${emergency.user_id}`, emergency);
     }
@@ -296,6 +370,31 @@ router.put("/verify/:requestId", verifyToken, verifyRole(["police"]), async (req
     res.json({ message: "✅ Emergency request verified by police.", emergency });
   } catch (error) {
     console.error("❌ Error verifying emergency request:", error);
+    res.status(500).json({ message: "❌ Server error. Please try again later." });
+  }
+});
+
+/**
+ * @route   PUT /api/emergency/add-note/:reportId
+ * @desc    Add or update notes for an emergency report
+ * @access  Private (Only Police)
+ */
+router.put("/add-note/:reportId", verifyToken, verifyRole(["police"]), async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    const { note } = req.body;
+
+    const report = await EmergencyRequest.findById(reportId);
+    if (!report) {
+      return res.status(404).json({ message: "❌ Report not found." });
+    }
+
+    report.notes = note;
+    await report.save();
+
+    res.status(200).json({ message: "✅ Note added successfully!", report });
+  } catch (error) {
+    console.error("❌ Error adding note:", error);
     res.status(500).json({ message: "❌ Server error. Please try again later." });
   }
 });

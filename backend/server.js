@@ -4,6 +4,8 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const http = require("http");
 const socketIo = require("socket.io");
+const path = require("path");
+const fs = require("fs");
 
 // Initialize Express app
 const app = express();
@@ -19,6 +21,16 @@ const io = socketIo(server, {
 app.use(cors()); // Simplest CORS setup, allows all origins
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from the uploads folder
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+  console.log("✅ Created uploads directory");
+}
 
 // Make io available to routes
 app.set("io", io);

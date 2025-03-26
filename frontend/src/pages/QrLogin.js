@@ -1,22 +1,29 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Box, Typography, Button, CircularProgress } from "@mui/material";
+import { Box, Typography, Button, CircularProgress, Input } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { QRCodeCanvas } from "qrcode.react";
 import Navbar from "../components/Navbar";
 import { baseURL } from "../utils/baseURL";
 
-// Use baseURL directly, which switches between development and production
 const qrBaseURL = baseURL;
 
 const QrLogin = () => {
   const [requestSent, setRequestSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [qrError, setQrError] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null); // New state for image
 
-  // QR code value (URL for emergency request)
   const qrCodeValue = `${qrBaseURL}/emergency/guest-request`;
+
+  // Handle image selection
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+    }
+  };
 
   const handleEmergencyRequest = async () => {
     setLoading(true);
@@ -32,15 +39,31 @@ const QrLogin = () => {
       async (position) => {
         const { latitude, longitude } = position.coords;
 
+        // Validate required fields
+        if (!latitude || !longitude) {
+          setLoading(false);
+          setQrError("❌ Latitude and longitude are required but could not be obtained.");
+          return;
+        }
+
+        // Use FormData to send both text and optional image
+        const formData = new FormData();
+        formData.append("latitude", latitude);
+        formData.append("longitude", longitude);
+        formData.append("emergency_type", "unspecified");
+        if (selectedImage) {
+          formData.append("image", selectedImage);
+        }
+
+        // Log FormData contents for debugging
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}: ${value}`);
+        }
+
         try {
           const response = await fetch(qrCodeValue, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              latitude,
-              longitude,
-              emergency_type: "unspecified",
-            }),
+            body: formData, // No headers needed; FormData sets Content-Type automatically
           });
 
           const result = await response.json();
@@ -48,6 +71,7 @@ const QrLogin = () => {
 
           if (response.ok) {
             setRequestSent(true);
+            setSelectedImage(null); // Clear image after successful request
           } else {
             setQrError(result.message || "❌ Failed to process emergency request. Please try again.");
           }
@@ -84,6 +108,7 @@ const QrLogin = () => {
     setRequestSent(false);
     setQrError(null);
     setLoading(false);
+    setSelectedImage(null); // Reset image state
   };
 
   return (
@@ -204,6 +229,27 @@ const QrLogin = () => {
               >
                 Use your phone’s camera or QR scanner to request assistance instantly
               </Typography>
+              {/* Image Upload Section */}
+              <Box sx={{ mt: 3 }}>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  disabled={loading}
+                  sx={{ mb: 2 }}
+                />
+                {selectedImage && (
+                  <Typography
+                    sx={{
+                      fontFamily: "'Poppins', sans-serif",
+                      fontSize: "0.9rem",
+                      color: "#00695C",
+                    }}
+                  >
+                    Selected: {selectedImage.name}
+                  </Typography>
+                )}
+              </Box>
             </Box>
           )}
           <Button

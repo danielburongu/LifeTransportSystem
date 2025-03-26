@@ -66,7 +66,7 @@ const PatientDashboard = () => {
   const [incidentDescription, setIncidentDescription] = useState("");
   const [policeCaseNo, setPoliceCaseNo] = useState("");
 
-  const emergencyTypes = ["accident", "medical", "fire", "other"];
+  const emergencyTypes = ["accident", "burns", "pregnancy", "injury", "medical"];
 
   const fetchEmergencyRequests = useCallback(async () => {
     setLoading(true);
