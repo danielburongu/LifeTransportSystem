@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Box, Typography, Button, CircularProgress, Input } from "@mui/material";
+import { Box, Typography, Button, CircularProgress, Input, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { QRCodeCanvas } from "qrcode.react";
@@ -14,6 +14,7 @@ const QrLogin = () => {
   const [loading, setLoading] = useState(false);
   const [qrError, setQrError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null); // New state for image
+  const [urgency, setUrgency] = useState(""); // State for urgency level
 
   const qrCodeValue = `${qrBaseURL}/emergency/guest-request`;
 
@@ -23,6 +24,11 @@ const QrLogin = () => {
     if (file) {
       setSelectedImage(file);
     }
+  };
+
+  // Handle urgency change
+  const handleUrgencyChange = (event) => {
+    setUrgency(event.target.value);
   };
 
   const handleEmergencyRequest = async () => {
@@ -40,9 +46,9 @@ const QrLogin = () => {
         const { latitude, longitude } = position.coords;
 
         // Validate required fields
-        if (!latitude || !longitude) {
+        if (!latitude || !longitude || !urgency) {
           setLoading(false);
-          setQrError("❌ Latitude and longitude are required but could not be obtained.");
+          setQrError("❌ All fields are required.");
           return;
         }
 
@@ -51,6 +57,7 @@ const QrLogin = () => {
         formData.append("latitude", latitude);
         formData.append("longitude", longitude);
         formData.append("emergency_type", "unspecified");
+        formData.append("urgency", urgency); // Add urgency to FormData
         if (selectedImage) {
           formData.append("image", selectedImage);
         }
@@ -109,6 +116,7 @@ const QrLogin = () => {
     setQrError(null);
     setLoading(false);
     setSelectedImage(null); // Reset image state
+    setUrgency(""); // Reset urgency state
   };
 
   return (
@@ -250,29 +258,56 @@ const QrLogin = () => {
                   </Typography>
                 )}
               </Box>
+
+              {/* Urgency Dropdown Section */}
+              <Box sx={{ mt: 3 }}>
+                <FormControl fullWidth>
+                  <InputLabel>Urgency Level</InputLabel>
+                  <Select
+                    value={urgency}
+                    onChange={handleUrgencyChange}
+                    label="Urgency Level"
+                    disabled={loading}
+                  >
+                    <MenuItem value="Critical">Critical</MenuItem>
+                    <MenuItem value="Urgent">Urgent</MenuItem>
+                    <MenuItem value="Normal">Normal</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+
+              <Box className="mt-8">
+                <Button
+                  onClick={handleEmergencyRequest}
+                  variant="contained"
+                  color="error"
+                  sx={{
+                    width: "100%",
+                    fontFamily: "'Poppins', sans-serif",
+                    fontWeight: 600,
+                    fontSize: "1.1rem",
+                  }}
+                >
+                  Request Emergency Help
+                </Button>
+              </Box>
+              <Box className="mt-4">
+                <Button
+                  onClick={resetState}
+                  variant="outlined"
+                  color="primary"
+                  sx={{
+                    width: "100%",
+                    fontFamily: "'Poppins', sans-serif",
+                    fontWeight: 600,
+                    fontSize: "1.1rem",
+                  }}
+                >
+                  Reset Form
+                </Button>
+              </Box>
             </Box>
           )}
-          <Button
-            onClick={requestSent ? resetState : handleEmergencyRequest}
-            disabled={loading}
-            variant="contained"
-            sx={{
-              bgcolor: "#D32F2F",
-              color: "#FFFFFF",
-              width: "100%",
-              p: 2,
-              fontSize: "1.125rem",
-              fontWeight: 600,
-              borderRadius: "8px",
-              textTransform: "none",
-              fontFamily: "'Poppins', sans-serif",
-              "&:hover": { bgcolor: "#C62828" },
-              "&:disabled": { bgcolor: "#B0BEC5" },
-              mt: 2,
-            }}
-          >
-            {requestSent ? "Request Another" : "Request Emergency Now"}
-          </Button>
         </Box>
       </motion.div>
     </Box>
