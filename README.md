@@ -11,7 +11,7 @@
 ## Features
 
 - ### Emergency Request Submission via QR
-![Hospital Intake Panel](https://drive.google.com/uc?id=1L-o0jizJK47GLcUXq3Mi5gzyrgn5AdFD)  
+![Hospital Intake Panel](https://drive.google.com/uc?export=download&id=1R-oocBUbxIQEKwdrQAQ-PfZ3fMRK-XfT)  
 
 - 👮 Police Dashboard to verify accident claims 
 - Ambulance Allocation System using geolocation and urgency level  
