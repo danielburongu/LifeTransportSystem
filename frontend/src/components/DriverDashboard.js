@@ -10,7 +10,6 @@ import {
   Container,
   Grid,
   Box,
-  Paper,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -46,7 +45,6 @@ import PersonIcon from "@mui/icons-material/Person";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import { baseURL } from "../utils/baseURL";
-import { useNavigate } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 
 // Custom Icons
@@ -94,7 +92,6 @@ const calculateETA = (distance) => {
 
 const DriverDashboard = () => {
   const { user } = useContext(AuthContext);
-  const navigate = useNavigate();
   const isMobile = useMediaQuery("(max-width:600px)");
   const isTablet = useMediaQuery("(max-width:960px)");
   const [assignedEmergencies, setAssignedEmergencies] = useState([]);

@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faAmbulance,
   faHeartbeat,
-  faUsers,
   faShieldAlt,
   faTachometerAlt,
   faStar,

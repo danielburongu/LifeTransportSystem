@@ -7,7 +7,6 @@ import {
   faHandsHelping,
   faAmbulance,
   faShieldAlt,
-  faUser,
   faStar,
   faCar,
   faHospital,
@@ -72,7 +71,7 @@ const heroStyles = `
 
 const Home = () => {
   const [responseStats] = useState({ calls: 120, assists: 85, dispatches: 45 });
-  const [activeSection, setActiveSection] = useState("hero");
+  // Removed unused activeSection state
   const [isEmergencyActive, setIsEmergencyActive] = useState(false);
   const [activeFaq, setActiveFaq] = useState(null);
   const sectionRefs = useRef({});
@@ -97,7 +96,7 @@ const Home = () => {
         const observer = new IntersectionObserver(
           ([entry]) => {
             if (entry.isIntersecting) {
-              setActiveSection(section);
+              // Removed setActiveSection as it is unused.
             }
           },
           { threshold: 0.5 }

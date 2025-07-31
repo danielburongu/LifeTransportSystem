@@ -31,7 +31,6 @@ import {
   Paper,
   InputAdornment,
 } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import VerifiedIcon from "@mui/icons-material/Verified";
@@ -41,7 +40,7 @@ import MapIcon from "@mui/icons-material/Map";
 import SearchIcon from "@mui/icons-material/Search";
 import DownloadIcon from "@mui/icons-material/Download";
 import { baseURL, staticBaseURL } from "../utils/baseURL";
-import { MapContainer, TileLayer, Marker, Popup, ZoomControl, ScaleControl, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, ZoomControl, ScaleControl, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import MarkerClusterGroup from "leaflet.markercluster";
@@ -261,7 +260,7 @@ const MapComponent = ({ reports, onMarkerClick, onMarkerHover, searchQuery }) =>
 };
 
 const PoliceDashboard = () => {
-  const { user } = useContext(AuthContext);
+  useContext(AuthContext);
   const [accidentReports, setAccidentReports] = useState([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -280,7 +279,6 @@ const PoliceDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [imageLoadStatus, setImageLoadStatus] = useState({});
   const mapRef = useRef(null);
-  const theme = useTheme();
 
   useEffect(() => {
     fetchPendingAccidents();
@@ -305,6 +303,7 @@ const PoliceDashboard = () => {
       socket.off("new_accident_report");
       socket.off("accident_verified");
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchPendingAccidents = async () => {

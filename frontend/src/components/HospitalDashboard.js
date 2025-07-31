@@ -22,7 +22,7 @@ import {
   Tooltip,
   IconButton,
 } from "@mui/material";
-import { styled, useTheme } from "@mui/material/styles";
+import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -78,8 +78,8 @@ const InfoBox = styled(Box)(({ theme }) => ({
 }));
 
 const HospitalDashboard = () => {
-  const { user } = useContext(AuthContext);
-  const theme = useTheme();
+  // Removed unused 'user' variable from AuthContext
+  useContext(AuthContext);
   const [emergencyRequests, setEmergencyRequests] = useState([]);
   const [availableAmbulances, setAvailableAmbulances] = useState([]);
   const [selectedDriver, setSelectedDriver] = useState({});

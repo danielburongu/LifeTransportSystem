@@ -15,7 +15,6 @@ import {
   faMapMarkerAlt,
   faListAlt,
   faTag,
-  faUserInjured,
   faChevronUp,
   faCommentDots,
   faQuestionCircle,
@@ -160,11 +159,11 @@ const Services = () => {
   const testimonials = [
     {
       quote: "Life Ride saved my life during a car accident. They arrived in minutes!",
-      author: "Sarah M., Kampala",
+      author: "Maureen., Kampala",
     },
     {
       quote: "The app’s real-time tracking gave me peace of mind during a medical emergency.",
-      author: "John K., Nairobi",
+      author: "John., Nebbi",
     },
   ];
 
