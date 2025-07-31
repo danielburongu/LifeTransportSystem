@@ -110,8 +110,8 @@ const Navbar = () => {
               cursor: "pointer",
             }}
           >
-            <span style={{ color: "#FFFFFF" }}>LIFE</span>
-            <span style={{ color: "#FFFFFF", marginLeft: "0.25rem" }}>Transport</span>
+            <span style={{ color: "#FFFFFF" }}>Save</span>
+            <span style={{ color: "#FFFFFF", marginLeft: "0.25rem" }}>lives</span>
           </Typography>
         </motion.div>
 

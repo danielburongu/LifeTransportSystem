@@ -73,7 +73,7 @@ const PrivacyPolicy = () => {
       icon: faLock,
       content: (
         <p className="text-gray-700 leading-relaxed">
-          At Life-Transport, protecting your privacy is our top priority. We handle your personal and sensitive data with the utmost care, adhering to global standards like the Ugandan Data Protection and Privacy Act, 2019, and the California Consumer Privacy Act (CCPA). This policy outlines our practices for collecting, using, and safeguarding your information transparently.
+          At Save Lives Uganda, protecting your privacy is our top priority. We handle your personal and sensitive data with the utmost care, adhering to global standards like the Ugandan Data Protection and Privacy Act, 2019, and the California Consumer Privacy Act (CCPA). This policy outlines our practices for collecting, using, and safeguarding your information transparently.
         </p>
       ),
     },
@@ -243,8 +243,8 @@ const PrivacyPolicy = () => {
           </ul>
           <p className="text-gray-700 mt-4">
             Email{" "}
-            <a href="mailto:support@lifetransport.com" className="text-red-600 hover:underline">
-              support@lifetransport.com
+            <a href="mailto:savelivesuganda@gmail.com" className="text-red-600 hover:underline">
+              savelivesuganda@gmail.com
             </a>{" "}
             to exercise these rights; we’ll respond within 30 days.
           </p>
@@ -307,8 +307,8 @@ const PrivacyPolicy = () => {
           <ul className="list-disc list-inside text-gray-700 space-y-3 mt-4">
             <li>
               Email:{" "}
-              <a href="mailto:support@lifetransport.com" className="text-red-600 hover:underline">
-                support@lifetransport.com
+              <a href="mailto:savelivesuganda@gmail.com" className="text-red-600 hover:underline">
+                savelivesuganda@gmail.com
               </a>
             </li>
           </ul>
@@ -399,7 +399,7 @@ const PrivacyPolicy = () => {
             Questions about our privacy practices?
           </p>
           <a
-            href="mailto:support@lifetransport.com"
+            href="mailto:savelivesuganda@gmail.com"
             className="inline-flex items-center bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white px-6 py-3 rounded-full text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
           >
             <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
@@ -421,7 +421,7 @@ const PrivacyPolicy = () => {
 
       {/* Footer */}
       <footer className="relative z-10 py-6 text-center text-gray-600 text-sm">
-        <p>© 2025 Life-Transport. All rights reserved.</p>
+        <p>© 2025 Save Lives Uganda. All rights reserved.</p>
       </footer>
     </div>
   );

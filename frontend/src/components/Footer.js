@@ -30,7 +30,7 @@ const Footer = () => {
                 mb: 1,
               }}
             >
-              Life Transport
+              Savelives
             </Typography>
             <Typography
               sx={{
@@ -95,14 +95,14 @@ const Footer = () => {
           <ul className="mb-4 space-y-2 text-white" style={{ fontFamily: "'font-poppins', sans-serif", fontSize: "0.875rem" }}>
             <li>
               📩 Email:{" "}
-              <a href="mailto:support@lifetransport.com" className="hover:text-red-600 transition duration-300">
-                support@lifetransport.com
+              <a href="mailto:savelivesuganda@gmail.com" className="hover:text-red-600 transition duration-300">
+                savelivesuganda@gmail.com
               </a>
             </li>
             <li>
               📞 Phone:{" "}
               <a href="tel:18005433100" className="hover:text-red-600 transition duration-300">
-                1-800-LIFE-Transport
+                savelives
               </a>
             </li>
           </ul>
@@ -119,7 +119,7 @@ const Footer = () => {
             textAlign: "center",
           }}
         >
-          © {new Date().getFullYear()} Life Transport | All Rights Reserved
+          © {new Date().getFullYear()} savelives | All Rights Reserved
         </Typography>
       </Box>
     </motion.footer>
